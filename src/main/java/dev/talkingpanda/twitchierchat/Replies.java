@@ -9,6 +9,7 @@ import net.minecraft.commands.arguments.MessageArgument;
 import net.minecraft.network.chat.*;
 import net.minecraft.server.players.PlayerList;
 import net.minecraft.util.CommonColors;
+import org.jetbrains.annotations.Nullable;
 
 
 public class Replies {
@@ -42,7 +43,7 @@ public class Replies {
         return message.copy().setStyle(Style.EMPTY.withHoverEvent(new HoverEvent.ShowText(Component.literal("Reply to ").append(userName))).withClickEvent(new ClickEvent.SuggestCommand("/reply " + id + " ")));
     }
 
-    private static Pair<String, Component> getReplyFor(long id) {
+    private static @Nullable Pair<String, Component> getReplyFor(long id) {
         return queue.get(id);
     }
 
@@ -55,6 +56,11 @@ public class Replies {
                         CommandSourceStack source = context.getSource();
                         PlayerList playerList = source.getServer().getPlayerList();
                         var msg = Replies.getReplyFor(id);
+                        if(msg == null) {
+                            context.getSource().sendFailure(Component.literal("Failed to get the target message, the message maybe too old to reply to").withColor(CommonColors.RED));
+                            return;
+                        }
+
                         playerList.broadcastSystemMessage(Component.literal("Replying to " + msg.getFirst() + ": ").append(msg.getSecond()).withColor(CommonColors.GRAY), false);
                         playerList.broadcastChatMessage(message, source, ChatType.bind(ChatType.CHAT, source));
                     });
