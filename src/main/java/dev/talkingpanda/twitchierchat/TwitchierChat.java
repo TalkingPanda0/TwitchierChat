@@ -44,7 +44,7 @@ public class TwitchierChat implements DedicatedServerModInitializer {
 
 
     public static @Nullable MutableComponent formatText(Component text) {
-        if (text == null) return null;
+        if (PARSERS == null || text == null) return null;
         var literal = text.tryCollapseToString();
         if (literal == null || literal.isBlank()) return null;
         for (var parser : PARSERS) {
@@ -85,7 +85,7 @@ public class TwitchierChat implements DedicatedServerModInitializer {
 
     private static void registerCommand(CommandDispatcher<CommandSourceStack> dispatcher) {
         dispatcher.register(Commands.literal("twitchierchat").requires(source -> source.permissions().hasPermission(Permissions.COMMANDS_MODERATOR)).then(
-                        Commands.literal("managers").then(Commands.literal("add").then(Commands.argument("player", GameProfileArgument.gameProfile())
+                Commands.literal("managers").then(Commands.literal("add").then(Commands.argument("player", GameProfileArgument.gameProfile())
                                 .suggests((c, p) -> {
                                     PlayerList list = (c.getSource()).getServer().getPlayerList();
                                     return SharedSuggestionProvider.suggest(list.getPlayers().stream().map(Player::nameAndId).map(NameAndId::name), p);
@@ -100,22 +100,22 @@ public class TwitchierChat implements DedicatedServerModInitializer {
                                     }
                                     return 1;
                                 })))
-                .then(Commands.literal("remove").then(Commands.argument("player", GameProfileArgument.gameProfile())
-                        .suggests((c, p) -> {
-                            PlayerList list = (c.getSource()).getServer().getPlayerList();
-                            return SharedSuggestionProvider.suggest(list.getPlayers().stream().map(Player::nameAndId).map(NameAndId::name), p);
-                        }).executes(context -> {
-                            Collection<NameAndId> players = GameProfileArgument.getGameProfiles(context, "player");
-                            for (NameAndId player : players) {
-                                if (Config.removeManager(player.id())) {
-                                    context.getSource().sendSuccess(() -> Component.literal(player.name() + " is no longer a manager"), true);
-                                } else {
-                                    context.getSource().sendFailure(Component.literal(player.name() + " is not a manager"));
+                        .then(Commands.literal("remove").then(Commands.argument("player", GameProfileArgument.gameProfile())
+                                .suggests((c, p) -> {
+                                    PlayerList list = (c.getSource()).getServer().getPlayerList();
+                                    return SharedSuggestionProvider.suggest(list.getPlayers().stream().map(Player::nameAndId).map(NameAndId::name), p);
+                                }).executes(context -> {
+                                    Collection<NameAndId> players = GameProfileArgument.getGameProfiles(context, "player");
+                                    for (NameAndId player : players) {
+                                        if (Config.removeManager(player.id())) {
+                                            context.getSource().sendSuccess(() -> Component.literal(player.name() + " is no longer a manager"), true);
+                                        } else {
+                                            context.getSource().sendFailure(Component.literal(player.name() + " is not a manager"));
 
-                                }
-                            }
-                            return 1;
-                        }))))
+                                        }
+                                    }
+                                    return 1;
+                                }))))
         );
 
         dispatcher.register(Commands.literal("twitchierchat").requires(source -> source.permissions().hasPermission(Permissions.COMMANDS_MODERATOR)).then(Commands.literal("server").then(
@@ -136,12 +136,12 @@ public class TwitchierChat implements DedicatedServerModInitializer {
         )));
 
         dispatcher.register(Commands.literal("twitchierchat").requires(source -> source.permissions().hasPermission(Permissions.COMMANDS_MODERATOR)).then(Commands.literal("maxReplyHistory").executes(context -> {
-            context.getSource().sendSuccess(() -> Component.literal("Max reply history is currently: " + Config.getMaxHistory()),false);
+            context.getSource().sendSuccess(() -> Component.literal("Max reply history is currently: " + Config.getMaxHistory()), false);
             return 1;
         }).then(Commands.argument("count", IntegerArgumentType.integer(1)).executes(context -> {
-            Integer count = IntegerArgumentType.getInteger(context,"count");
+            Integer count = IntegerArgumentType.getInteger(context, "count");
             Config.setMaxHistory(count);
-            context.getSource().sendSuccess(() -> Component.literal("Set max reply history to " + count),true);
+            context.getSource().sendSuccess(() -> Component.literal("Set max reply history to " + count), true);
             return 1;
         }))));
 
@@ -153,7 +153,7 @@ public class TwitchierChat implements DedicatedServerModInitializer {
                         context.getSource().sendFailure(Component.literal(e.getMessage()).withColor(CommonColors.RED));
                         return 0;
                     }
-                    context.getSource().sendSuccess(() -> Component.literal("Reloaded config file"),true);
+                    context.getSource().sendSuccess(() -> Component.literal("Reloaded config file"), true);
                     return 1;
                 }
         )));
@@ -182,6 +182,7 @@ public class TwitchierChat implements DedicatedServerModInitializer {
             Emotes.registerCommand(dispatcher);
             NameColor.registerCommand(dispatcher);
             Replies.registerCommand(dispatcher);
+            Pings.registerCommand(dispatcher);
             TwitchierChat.registerCommand(dispatcher);
         });
 

@@ -46,6 +46,18 @@ public class Config {
         return result;
     }
 
+    public static void setPing(UUID player, boolean shouldPing) {
+        if (shouldPing) {
+            configData.dontPing.remove(player);
+        } else {
+            configData.dontPing.add(player);
+        }
+    }
+
+    public static boolean shouldPing(UUID player) {
+        return !configData.dontPing.contains(player);
+    }
+
 
     public static boolean isManager(UUID player) {
         return configData.managers.contains(player);

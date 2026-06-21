@@ -7,22 +7,24 @@ import net.minecraft.commands.CommandSourceStack;
 import net.minecraft.commands.Commands;
 import net.minecraft.commands.arguments.MessageArgument;
 import net.minecraft.network.chat.*;
+import net.minecraft.server.level.ServerPlayer;
 import net.minecraft.server.players.PlayerList;
 import net.minecraft.util.CommonColors;
 import org.jetbrains.annotations.Nullable;
 
+import java.util.UUID;
+
 
 public class Replies {
-    private static final ReplyQueue<Pair<String, Component>> queue = new ReplyQueue<>();
+    private static final ReplyQueue<Pair<ServerPlayer, Component>> queue = new ReplyQueue<>();
 
-    private static long addToQueue(String userName, Component contents) {
-        return queue.add(new Pair<>(userName, contents));
+    private static long addToQueue(ServerPlayer player, Component contents) {
+        return queue.add(new Pair<>(player, contents));
     }
 
     public static OutgoingChatMessage handleOutgoingMessage(OutgoingChatMessage message, ChatType.Bound bound) {
         if (!(message instanceof OutgoingChatMessage.Player)) return message;
 
-        String userName = bound.name().getString();
         Component messageComponent = message.content();
         PlayerChatMessage playerMessage = ((OutgoingChatMessage.Player) message).message();
 
@@ -30,9 +32,10 @@ public class Replies {
 
         //EMOTE_COMMAND refers to /me.
         if (chatType.is(ChatType.CHAT) || chatType.is(ChatType.SAY_COMMAND) || chatType.is(ChatType.EMOTE_COMMAND)) {
-            long id = addToQueue(userName, messageComponent);
 
-            return OutgoingChatMessage.create(playerMessage.withUnsignedContent(addReplyButton(userName, messageComponent, id)));
+            long id = addToQueue(TwitchierChat.minecraftServer.getPlayerList().getPlayer(playerMessage.sender()), messageComponent);
+
+            return OutgoingChatMessage.create(playerMessage.withUnsignedContent(addReplyButton(bound.name().getString(), messageComponent, id)));
         }
 
         return message;
@@ -43,7 +46,7 @@ public class Replies {
         return message.copy().setStyle(Style.EMPTY.withHoverEvent(new HoverEvent.ShowText(Component.literal("Reply to ").append(userName))).withClickEvent(new ClickEvent.SuggestCommand("/reply " + id + " ")));
     }
 
-    private static @Nullable Pair<String, Component> getReplyFor(long id) {
+    private static @Nullable Pair<ServerPlayer, Component> getReplyFor(long id) {
         return queue.get(id);
     }
 
@@ -54,15 +57,23 @@ public class Replies {
                         long id = IntegerArgumentType.getInteger(context, "messageId");
 
                         CommandSourceStack source = context.getSource();
+                        ServerPlayer sourcePlayer = source.getPlayer();
+                        if (sourcePlayer == null) {
+                            return;
+                        }
                         PlayerList playerList = source.getServer().getPlayerList();
                         var msg = Replies.getReplyFor(id);
-                        if(msg == null) {
+                        if (msg == null) {
                             context.getSource().sendFailure(Component.literal("Failed to get the target message, the message maybe too old to reply to").withColor(CommonColors.RED));
                             return;
                         }
 
-                        playerList.broadcastSystemMessage(Component.literal("Replying to " + msg.getFirst() + ": ").append(msg.getSecond()).withColor(CommonColors.GRAY), false);
+                        playerList.broadcastSystemMessage(Component.literal("Replying to " + msg.getFirst().getPlainTextName() + ": ").append(msg.getSecond().copy().withStyle(Style.EMPTY)).withColor(CommonColors.GRAY), false);
                         playerList.broadcastChatMessage(message, source, ChatType.bind(ChatType.CHAT, source));
+                        UUID uuid = msg.getFirst().getUUID();
+                        if (Config.shouldPing(uuid) && uuid != sourcePlayer.getUUID()) {
+                            Pings.ping(msg.getFirst());
+                        }
                     });
                     return 1;
                 }
