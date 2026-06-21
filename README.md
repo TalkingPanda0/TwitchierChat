@@ -46,6 +46,17 @@ Managers can remove and add emotes they can't add or remove other managers. Requ
 
 Will remove `<player>` from managers. 
 
+### `/twitchierchat maxReplyHistory <count>`
+
+Will set the max amount of messages to keep in memory for replies
+
+### `/twitchierchat maxReplyHistory`
+
+Shows the current max reply history
+
+### `/twitchierchat reload`
+Will reload the config file from disk
+
 ##  Emotes
 ### `/emotes add <emote> <sourceUrl> <showLogs> <tileSize> <fps>`
 
