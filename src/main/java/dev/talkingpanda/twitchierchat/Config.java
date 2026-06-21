@@ -90,6 +90,15 @@ public class Config {
                 if (data.colorMap != null) {
                     configData.colorMap.putAll(data.colorMap);
                 }
+
+                if(data.maxHistory != null) {
+                    configData.maxHistory = data.maxHistory;
+                }
+
+                configData.dontPing.clear();
+                if(data.dontPing != null) {
+                    configData.dontPing = data.dontPing;
+                }
             }
         } catch (IOException e) {
             TwitchierChat.LOGGER.error("Failed to read config file: ", e);

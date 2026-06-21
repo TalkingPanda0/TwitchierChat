@@ -21,6 +21,7 @@ import net.minecraft.server.dedicated.DedicatedServer;
 import net.minecraft.server.permissions.Permissions;
 import net.minecraft.server.players.NameAndId;
 import net.minecraft.server.players.PlayerList;
+import net.minecraft.util.CommonColors;
 import net.minecraft.world.entity.player.Player;
 import offsetmonkey538.meshlib.api.HttpHandlerRegistry;
 import org.jetbrains.annotations.Nullable;
@@ -120,11 +121,11 @@ public class TwitchierChat implements DedicatedServerModInitializer {
         dispatcher.register(Commands.literal("twitchierchat").requires(source -> source.permissions().hasPermission(Permissions.COMMANDS_MODERATOR)).then(Commands.literal("server").then(
                 Commands.argument("address", StringArgumentType.string()).executes(context -> {
                     String address = StringArgumentType.getString(context, "address");
-                    Config.setServerAddress(address);
+                    Config.setServer(address, TwitchierChat.minecraftServer.getServerPort());
                     context.getSource().sendSuccess(() -> Component.literal("Set resource pack address to " + Config.getServerUrl()), true);
                     return 1;
                 }).then(Commands.argument("port", IntegerArgumentType.integer())
-                        .suggests((c, p) -> p.suggest(Config.getServerPort()).buildFuture())
+                        .suggests((c, p) -> p.suggest(TwitchierChat.minecraftServer.getServerPort()).buildFuture())
                         .executes(context -> {
                             String address = StringArgumentType.getString(context, "address");
                             Integer port = IntegerArgumentType.getInteger(context, "port");
@@ -133,6 +134,30 @@ public class TwitchierChat implements DedicatedServerModInitializer {
                             return 1;
                         }))
         )));
+
+        dispatcher.register(Commands.literal("twitchierchat").requires(source -> source.permissions().hasPermission(Permissions.COMMANDS_MODERATOR)).then(Commands.literal("maxReplyHistory").executes(context -> {
+            context.getSource().sendSuccess(() -> Component.literal("Max reply history is currently: " + Config.getMaxHistory()),false);
+            return 1;
+        }).then(Commands.argument("count", IntegerArgumentType.integer(1)).executes(context -> {
+            Integer count = IntegerArgumentType.getInteger(context,"count");
+            Config.setMaxHistory(count);
+            context.getSource().sendSuccess(() -> Component.literal("Set max reply history to " + count),true);
+            return 1;
+        }))));
+
+        dispatcher.register(Commands.literal("twitchierchat").requires(source -> source.permissions().hasPermission(Permissions.COMMANDS_MODERATOR)).then(Commands.literal("reload").executes(
+                context -> {
+                    try {
+                        Config.readConfig();
+                    } catch (Exception e) {
+                        context.getSource().sendFailure(Component.literal(e.getMessage()).withColor(CommonColors.RED));
+                        return 0;
+                    }
+                    context.getSource().sendSuccess(() -> Component.literal("Reloaded config file"),true);
+                    return 1;
+                }
+        )));
+
     }
 
     private void readConfig() {

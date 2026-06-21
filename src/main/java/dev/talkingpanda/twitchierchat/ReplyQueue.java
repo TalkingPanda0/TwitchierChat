@@ -4,13 +4,14 @@ import java.util.Map;
 
 
 public class ReplyQueue<V> {
-    private static final int MAX_SIZE = 50;
+
     private long keyCounter = 0;
 
-    private final Map<Long, V> map = new LinkedHashMap<>(MAX_SIZE, 0.75f, true) {
+    private final Map<Long, V> map = new LinkedHashMap<>(Config.getMaxHistory(), 0.75f, true) {
+
         @Override
         protected boolean removeEldestEntry(Map.Entry<Long, V> eldest) {
-            return size() > MAX_SIZE;
+            return size() > Config.getMaxHistory();
         }
     };
 
