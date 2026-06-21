@@ -1,7 +1,6 @@
 package dev.talkingpanda.twitchierchat.mixin;
 
 
-import dev.talkingpanda.twitchierchat.Emotes;
 import dev.talkingpanda.twitchierchat.TwitchierChat;
 import net.minecraft.world.level.block.entity.SignBlockEntity;
 import net.minecraft.world.level.block.entity.SignText;

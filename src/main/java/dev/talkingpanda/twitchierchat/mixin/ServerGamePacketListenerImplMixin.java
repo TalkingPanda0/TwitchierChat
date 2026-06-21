@@ -1,7 +1,6 @@
 package dev.talkingpanda.twitchierchat.mixin;
 
 import com.llamalad7.mixinextras.sugar.Local;
-import dev.talkingpanda.twitchierchat.Emotes;
 import dev.talkingpanda.twitchierchat.TwitchierChat;
 import net.minecraft.core.component.DataComponents;
 import net.minecraft.server.network.FilteredText;

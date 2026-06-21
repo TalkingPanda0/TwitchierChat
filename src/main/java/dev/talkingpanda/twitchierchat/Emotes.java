@@ -156,7 +156,7 @@ public class Emotes {
         return true;
     }
 
-    public static CompletableFuture<Pair<InputStream, @Nullable String>> downloadImageAsync(@Nullable CommandSourceStack source, URL url, int tileSize, int ifps) throws Exception {
+    public static CompletableFuture<Pair<InputStream, @Nullable String>> downloadImageAsync(@Nullable CommandSourceStack source, URL url, int tileSize, int ifps) {
 
 
         return
@@ -230,7 +230,7 @@ public class Emotes {
         String[] cmd = new String[args.length + 1];
         cmd[0] = "ffmpeg";
         System.arraycopy(args, 0, cmd, 1, args.length);
-        TwitchierChat.LOGGER.info("Running " + String.join(" ", cmd) + ".");
+        TwitchierChat.LOGGER.info("Running {}.", String.join(" ", cmd));
         Process p = new ProcessBuilder(cmd)
                 .redirectErrorStream(true)
                 .start();

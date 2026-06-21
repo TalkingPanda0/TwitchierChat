@@ -68,7 +68,7 @@ public class Replies {
                             return;
                         }
 
-                        playerList.broadcastSystemMessage(Component.literal("Replying to " + msg.getFirst().getPlainTextName() + ": ").append(msg.getSecond().copy().withStyle(Style.EMPTY)).withColor(CommonColors.GRAY), false);
+                        playerList.broadcastSystemMessage(Component.literal("Replying to " + msg.getFirst().getPlainTextName() + ": ").append(msg.getSecond()).withColor(CommonColors.GRAY), false);
                         playerList.broadcastChatMessage(message, source, ChatType.bind(ChatType.CHAT, source));
                         UUID uuid = msg.getFirst().getUUID();
                         if (Config.shouldPing(uuid) && uuid != sourcePlayer.getUUID()) {

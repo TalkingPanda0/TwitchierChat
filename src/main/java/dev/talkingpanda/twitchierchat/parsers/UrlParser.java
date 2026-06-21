@@ -5,14 +5,16 @@ import net.minecraft.network.chat.*;
 import org.jetbrains.annotations.Nullable;
 
 import java.net.URI;
-import java.util.regex.Pattern;
 
 import static net.minecraft.util.Util.parseAndValidateUntrustedUri;
 
 public class UrlParser implements TextParser{
-    private static final Pattern urlRegex = Pattern.compile("https?://(www\\.)?[-a-zA-Z0-9@:%._+~#=]{1,256}\\.[a-zA-Z0-9()]{1,6}\\b([-a-zA-Z0-9()@:%_+.~#?&/=]*)");
     @Override
     public @Nullable MutableComponent parse(String input) {
+        if(!input.startsWith("http")) {
+            return null;
+        }
+
         URI uri;
 
         try {

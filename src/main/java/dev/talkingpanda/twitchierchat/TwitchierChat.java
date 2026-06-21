@@ -44,7 +44,7 @@ public class TwitchierChat implements DedicatedServerModInitializer {
 
 
     public static @Nullable MutableComponent formatText(Component text) {
-        if (PARSERS == null || text == null) return null;
+        if (text == null) return null;
         var literal = text.tryCollapseToString();
         if (literal == null || literal.isBlank()) return null;
         for (var parser : PARSERS) {

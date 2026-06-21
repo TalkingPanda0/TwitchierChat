@@ -2,7 +2,6 @@ package dev.talkingpanda.twitchierchat;
 
 import com.mojang.brigadier.CommandDispatcher;
 import com.mojang.brigadier.context.CommandContext;
-import net.fabricmc.fabric.api.networking.v1.PlayerLookup;
 import net.minecraft.commands.CommandSourceStack;
 import net.minecraft.commands.Commands;
 import net.minecraft.network.chat.Component;
@@ -12,13 +11,10 @@ import net.minecraft.server.level.ServerPlayer;
 import net.minecraft.sounds.SoundEvents;
 import net.minecraft.sounds.SoundSource;
 
-import java.util.Collection;
 import java.util.HashSet;
-import java.util.Map;
 import java.util.UUID;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
-import java.util.stream.Collectors;
 
 public class Pings {
 
@@ -29,14 +25,17 @@ public class Pings {
 
 
     public static void handlePings(PlayerChatMessage message) {
-        Collection<ServerPlayer> players = PlayerLookup.all(TwitchierChat.minecraftServer);
-        Map<String, ServerPlayer> playerMap = players.stream().collect(Collectors.toMap(player -> player.getPlainTextName().toLowerCase(), player -> player));
-        String regex = String.join("|", playerMap.keySet());
-        Matcher matcher = Pattern.compile(regex, Pattern.CASE_INSENSITIVE).matcher(message.signedContent());
+        String regex = String.join("|",TwitchierChat.minecraftServer.getPlayerList().getPlayerNamesArray());
+        Matcher matcher = Pattern.compile(regex,Pattern.CASE_INSENSITIVE).matcher(message.signedContent());
+
         HashSet<ServerPlayer> pings = new HashSet<>();
 
         while (matcher.find()) {
-            ServerPlayer player = playerMap.get(matcher.group().toLowerCase());
+            ServerPlayer player = TwitchierChat.minecraftServer.getPlayerList().getPlayerByName(matcher.group());
+            if(player == null) {
+                continue;
+            }
+
             UUID uuid = player.getUUID();
 
             if (Config.shouldPing(uuid) && !message.sender().equals(uuid)) {

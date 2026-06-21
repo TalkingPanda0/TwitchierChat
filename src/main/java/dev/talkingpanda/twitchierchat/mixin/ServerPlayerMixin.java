@@ -2,7 +2,6 @@ package dev.talkingpanda.twitchierchat.mixin;
 
 import com.llamalad7.mixinextras.sugar.Local;
 import com.mojang.authlib.GameProfile;
-import dev.talkingpanda.twitchierchat.NameColor;
 import dev.talkingpanda.twitchierchat.Replies;
 import net.minecraft.network.chat.ChatType;
 import net.minecraft.network.chat.Component;

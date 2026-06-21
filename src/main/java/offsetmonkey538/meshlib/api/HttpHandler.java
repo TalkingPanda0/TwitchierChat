@@ -19,7 +19,7 @@ import static offsetmonkey538.meshlib.impl.ProtocolHandler.LOGGER;
 @FunctionalInterface
 public interface HttpHandler {
 
-    void handleRequest(@NotNull ChannelHandlerContext ctx, @NotNull FullHttpRequest request) throws Exception;
+    void handleRequest(@NotNull ChannelHandlerContext ctx, @NotNull FullHttpRequest request);
 
     static void sendError(@NotNull ChannelHandlerContext ctx, @NotNull HttpResponseStatus status) {
         sendError(ctx, status, null);

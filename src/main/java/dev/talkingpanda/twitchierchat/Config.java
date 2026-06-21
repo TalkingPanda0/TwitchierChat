@@ -139,9 +139,9 @@ public class Config {
     private static class ConfigData {
         public String serverAddress = null;
         public Integer serverPort = null;
-        public HashSet<UUID> managers = new HashSet<>();
+        public final HashSet<UUID> managers = new HashSet<>();
         public HashSet<UUID> dontPing = new HashSet<>();
         public Integer maxHistory = 100;
-        public HashMap<UUID, Integer> colorMap = new HashMap<>();
+        public final HashMap<UUID, Integer> colorMap = new HashMap<>();
     }
 }
