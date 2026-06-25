@@ -30,8 +30,18 @@ public class Pings {
         }
 
         String name = receiver.getPlainTextName().toLowerCase();
-        if (message.signedContent().toLowerCase().contains(name)) {
+        String content = message.signedContent().toLowerCase();
+        if (content.contains(name)) {
             ping(receiver);
+            return;
+        }
+
+        String[] aliases = Config.getAliases(receiverUUID);
+        for (String alias : aliases) {
+            if (content.contains(alias)) {
+                ping(receiver);
+                return;
+            }
         }
     }
 
@@ -78,5 +88,56 @@ public class Pings {
                                 }))
                         )
         );
+
+        dispatcher.register(Commands.literal("ping").requires(CommandSourceStack::isPlayer).then(Commands.literal("aliases")
+                .executes(context -> {
+                    ServerPlayer player = context.getSource().getPlayer();
+                    if (player == null) {
+                        return 0;
+                    }
+                    String aliases = String.join(", ", Config.getAliases(player.getUUID()));
+                    context.getSource().sendSuccess(() -> Component.literal("Your aliases are: " + aliases), false);
+
+                    return 1;
+                }).then(Commands.literal("add").then(Commands.argument("alias", StringArgumentType.word()).executes(context -> {
+                    ServerPlayer player = context.getSource().getPlayer();
+                    if (player == null) {
+                        return 0;
+                    }
+                    String alias = StringArgumentType.getString(context, "alias");
+                    if (Config.addAlias(player.getUUID(), alias)) {
+                        context.getSource().sendSuccess(() -> Component.literal("Added " + alias + " to your aliases"), false);
+                    } else {
+                        context.getSource().sendFailure(Component.literal(alias + " is already your alias"));
+                    }
+                    return 1;
+                })))
+                .then(Commands.literal("remove").then(Commands.argument("alias", StringArgumentType.word())
+                                .suggests((context, builder) -> {
+                                    ServerPlayer player = context.getSource().getPlayer();
+                                    if(player == null) {
+                                        return null;
+                                    }
+
+                                    return SharedSuggestionProvider.suggest(Config.getAliases(player.getUUID()),builder);
+                                })
+                        .executes(context -> {
+                            ServerPlayer player = context.getSource().getPlayer();
+                            if (player == null) {
+                                return 0;
+                            }
+                            String alias = StringArgumentType.getString(context, "alias");
+                            if (Config.removeAlias(player.getUUID(), alias)) {
+                                context.getSource().sendSuccess(() -> Component.literal(alias + " is no longer your alias"), false);
+                            } else {
+                                context.getSource().sendFailure(Component.literal(alias + " is not your alias"));
+                            }
+                            return 1;
+                        })))
+        ));
+
+
+
+
     }
 }

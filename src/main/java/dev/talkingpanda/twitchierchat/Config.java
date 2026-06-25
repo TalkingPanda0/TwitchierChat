@@ -10,7 +10,11 @@ import java.io.FileReader;
 import java.io.FileWriter;
 import java.io.IOException;
 import java.nio.file.Path;
-import java.util.*;
+import java.util.HashMap;
+import java.util.HashSet;
+import java.util.UUID;
+
+import static net.minecraft.core.Holder.direct;
 
 public class Config {
     private static final Path configPath = Path.of(TwitchierChat.configDir.toString(), "config.json");
@@ -99,8 +103,8 @@ public class Config {
         }
 
         for (UUID uuid : data.dontPing) {
-            setPing(uuid,false,false);
-            setPing(uuid,true,false);
+            setPing(uuid, false, false);
+            setPing(uuid, true, false);
         }
 
         for (var entry : data.colorMap.entrySet()) {
@@ -179,18 +183,19 @@ public class Config {
 
         }
     }
-    public static boolean removeAlias(UUID player,String name) {
+
+    public static boolean removeAlias(UUID player, String name) {
         User user = getUser(player);
         boolean result = user.Aliases.remove(name.toLowerCase());
         writeConfig();
         return result;
     }
 
-    public static boolean addAlias(UUID player,String name) {
-       User user = getUser(player);
-       boolean result = user.Aliases.add(name.toLowerCase());
-       writeConfig();
-       return result;
+    public static boolean addAlias(UUID player, String name) {
+        User user = getUser(player);
+        boolean result = user.Aliases.add(name.toLowerCase());
+        writeConfig();
+        return result;
     }
 
     public static String[] getAliases(UUID player) {
