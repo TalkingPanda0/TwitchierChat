@@ -64,7 +64,11 @@ public class TwitchierChat implements DedicatedServerModInitializer {
 
             @Nullable Component parserResult = null;
             for (var parser : PARSERS) {
-                parserResult = parser.parse(input);
+                try {
+                    parserResult = parser.parse(input);
+                } catch (Exception e) {
+                    TwitchierChat.LOGGER.error("Failed parsing message", e);
+                }
                 if (parserResult != null) break;
             }
             if (parserResult == null) {
