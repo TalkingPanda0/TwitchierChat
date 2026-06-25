@@ -3,6 +3,7 @@ package dev.talkingpanda.twitchierchat;
 import com.mojang.brigadier.CommandDispatcher;
 import com.mojang.brigadier.arguments.IntegerArgumentType;
 import com.mojang.datafixers.util.Pair;
+import net.minecraft.ChatFormatting;
 import net.minecraft.commands.CommandSourceStack;
 import net.minecraft.commands.Commands;
 import net.minecraft.commands.arguments.MessageArgument;
@@ -68,7 +69,7 @@ public class Replies {
                             return;
                         }
 
-                        playerList.broadcastSystemMessage(Component.literal("Replying to " + msg.getFirst().getPlainTextName() + ": ").append(msg.getSecond()).withColor(CommonColors.GRAY), false);
+                        playerList.broadcastSystemMessage(Component.literal("Replying to " + msg.getFirst().getPlainTextName() + ": ").append(msg.getSecond()).withStyle(Style.EMPTY.withShadowColor(CommonColors.BLACK).withColor(ChatFormatting.GRAY)), false);
                         playerList.broadcastChatMessage(message, source, ChatType.bind(ChatType.CHAT, source));
                         UUID uuid = msg.getFirst().getUUID();
                         if (Config.shouldPing(uuid) && uuid != sourcePlayer.getUUID()) {
