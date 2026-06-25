@@ -1,14 +1,18 @@
 package dev.talkingpanda.twitchierchat;
 
 import com.mojang.brigadier.CommandDispatcher;
+import com.mojang.brigadier.arguments.StringArgumentType;
 import com.mojang.brigadier.context.CommandContext;
 import net.minecraft.commands.CommandSourceStack;
 import net.minecraft.commands.Commands;
+import net.minecraft.commands.SharedSuggestionProvider;
+import net.minecraft.commands.arguments.IdentifierArgument;
+import net.minecraft.commands.synchronization.SuggestionProviders;
 import net.minecraft.network.chat.Component;
 import net.minecraft.network.chat.PlayerChatMessage;
 import net.minecraft.network.protocol.game.ClientboundSoundPacket;
+import net.minecraft.resources.Identifier;
 import net.minecraft.server.level.ServerPlayer;
-import net.minecraft.sounds.SoundEvents;
 import net.minecraft.sounds.SoundSource;
 
 import java.util.UUID;
@@ -16,7 +20,7 @@ import java.util.UUID;
 public class Pings {
 
     public static void ping(ServerPlayer player) {
-        var packet = new ClientboundSoundPacket(SoundEvents.NOTE_BLOCK_PLING, SoundSource.UI, player.getX(), player.getY(), player.getZ(), 1.0f, 1.0f, 0);
+        var packet = new ClientboundSoundPacket(Config.getPingSound(player.getUUID()), SoundSource.UI, player.getX(), player.getY(), player.getZ(), 1.0f, 1.0f, 0);
         player.connection.send(packet);
     }
 
@@ -113,14 +117,14 @@ public class Pings {
                     return 1;
                 })))
                 .then(Commands.literal("remove").then(Commands.argument("alias", StringArgumentType.word())
-                                .suggests((context, builder) -> {
-                                    ServerPlayer player = context.getSource().getPlayer();
-                                    if(player == null) {
-                                        return null;
-                                    }
+                        .suggests((context, builder) -> {
+                            ServerPlayer player = context.getSource().getPlayer();
+                            if (player == null) {
+                                return null;
+                            }
 
-                                    return SharedSuggestionProvider.suggest(Config.getAliases(player.getUUID()),builder);
-                                })
+                            return SharedSuggestionProvider.suggest(Config.getAliases(player.getUUID()), builder);
+                        })
                         .executes(context -> {
                             ServerPlayer player = context.getSource().getPlayer();
                             if (player == null) {
@@ -137,7 +141,27 @@ public class Pings {
         ));
 
 
+        dispatcher.register(Commands.literal("ping").requires(CommandSourceStack::isPlayer).then(Commands.literal("sound").then(Commands.argument("sound", IdentifierArgument.id())
+                .suggests(SuggestionProviders.cast(SuggestionProviders.AVAILABLE_SOUNDS))
+                .executes(context -> {
+                    ServerPlayer player = context.getSource().getPlayer();
+                    if (player == null) {
+                        return 0;
+                    }
+                    Identifier identifier = IdentifierArgument.getId(context, "sound");
+                    Config.setPingSound(player.getUUID(), identifier);
+                    context.getSource().sendSuccess(() -> Component.literal("Set your ping sound to " + identifier.toShortString()), false);
 
-
+                    return 1;
+                })
+        )));
+        dispatcher.register(Commands.literal("ping").requires(CommandSourceStack::isPlayer).then(Commands.literal("resetSound").executes(context -> {
+            ServerPlayer player = context.getSource().getPlayer();
+            if (player == null) {
+                return 0;
+            }
+            Config.setPingSound(player.getUUID(), null);
+            return 1;
+        })));
     }
 }

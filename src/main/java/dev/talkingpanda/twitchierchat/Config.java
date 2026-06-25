@@ -3,7 +3,13 @@ package dev.talkingpanda.twitchierchat;
 
 import com.google.gson.Gson;
 import com.google.gson.GsonBuilder;
+import com.google.gson.JsonObject;
+import net.minecraft.core.Holder;
+import net.minecraft.resources.Identifier;
+import net.minecraft.sounds.SoundEvent;
+import net.minecraft.sounds.SoundEvents;
 import org.jetbrains.annotations.Nullable;
+import org.jspecify.annotations.NonNull;
 
 import java.io.File;
 import java.io.FileReader;
@@ -63,6 +69,7 @@ public class Config {
         } else {
             user.shouldPing = shouldPing;
         }
+        writeConfig();
     }
 
     public static boolean shouldPing(UUID player, boolean reply) {
@@ -203,6 +210,18 @@ public class Config {
         return user.Aliases.toArray(new String[0]);
     }
 
+    public static void setPingSound(UUID player ,Identifier sound){
+        getUser(player).pingSound = sound;
+        writeConfig();
+    }
+
+    public static Holder<SoundEvent> getPingSound(UUID player) {
+        User user = getUser(player);
+        if (user.pingSound == null) {
+            return SoundEvents.NOTE_BLOCK_PLING;
+        }
+        return Holder.direct(SoundEvent.createVariableRangeEvent(user.pingSound));
+    }
 
     public static class User {
         public boolean isManager = false;
@@ -210,6 +229,7 @@ public class Config {
         public boolean shouldReplyPing = true;
         public Integer color = null;
         public HashSet<String> Aliases = new HashSet<>();
+        public Identifier pingSound = null;
     }
 
     private static class ConfigData {
