@@ -10,9 +10,7 @@ import java.io.FileReader;
 import java.io.FileWriter;
 import java.io.IOException;
 import java.nio.file.Path;
-import java.util.HashMap;
-import java.util.HashSet;
-import java.util.UUID;
+import java.util.*;
 
 public class Config {
     private static final Path configPath = Path.of(TwitchierChat.configDir.toString(), "config.json");
@@ -34,84 +32,130 @@ public class Config {
     }
 
     public static boolean addManager(UUID manager) {
-        boolean result = configData.managers.add(manager);
+        User user = getUser(manager);
+        if (user.isManager) {
+            return false;
+        }
+        user.isManager = true;
         writeConfig();
-
-        return result;
+        return true;
     }
 
     public static boolean removeManager(UUID manager) {
-        boolean result = configData.managers.remove(manager);
+        User user = getUser(manager);
+        if (!user.isManager) {
+            return false;
+        }
+
+        user.isManager = false;
         writeConfig();
-        return result;
+        return true;
     }
 
-    public static void setPing(UUID player, boolean shouldPing) {
-        if (shouldPing) {
-            configData.dontPing.remove(player);
+    public static void setPing(UUID player, boolean reply, boolean shouldPing) {
+        User user = getUser(player);
+        if (reply) {
+            user.shouldReplyPing = shouldPing;
         } else {
-            configData.dontPing.add(player);
+            user.shouldPing = shouldPing;
         }
     }
 
-    public static boolean shouldPing(UUID player) {
-        return !configData.dontPing.contains(player);
+    public static boolean shouldPing(UUID player, boolean reply) {
+        User user = getUser(player);
+        return reply ? user.shouldReplyPing : user.shouldPing;
     }
 
 
     public static boolean isManager(UUID player) {
-        return configData.managers.contains(player);
+        return getUser(player).isManager;
     }
 
     public static void setColor(UUID player, Integer color) {
-        configData.colorMap.put(player, color);
+        getUser(player).color = color;
         writeConfig();
     }
 
     public static void removeColor(UUID player) {
-        configData.colorMap.remove(player);
+        getUser(player).color = null;
         writeConfig();
     }
 
     public static @Nullable Integer getColor(UUID player) {
-        return configData.colorMap.get(player);
+        return getUser(player).color;
+    }
+
+    public static @NonNull User getUser(UUID player) {
+        return configData.users.computeIfAbsent(player, _ -> new User());
+    }
+
+    private static void migrate(OldConfigData data) {
+        configData.serverAddress = data.serverAddress;
+        configData.serverPort = data.serverPort;
+        configData.maxHistory = data.maxHistory;
+
+        for (UUID uuid : data.managers) {
+            addManager(uuid);
+        }
+
+        for (UUID uuid : data.dontPing) {
+            setPing(uuid,false,false);
+            setPing(uuid,true,false);
+        }
+
+        for (var entry : data.colorMap.entrySet()) {
+            setColor(entry.getKey(), entry.getValue());
+        }
+
     }
 
 
     public static void readConfig() {
 
         try (FileReader reader = new FileReader(configFile)) {
-            ConfigData data = gson.fromJson(reader, ConfigData.class);
-
-            if (data != null) {
-                if (data.serverAddress != null) {
-
-                    configData.serverAddress = data.serverAddress;
-                }
-
-                if(data.serverPort != null) {
-                    configData.serverPort = data.serverPort;
-                }
-
-                configData.managers.clear();
-                if (data.managers != null) {
-                    configData.managers.addAll(data.managers);
-                }
-
-                configData.colorMap.clear();
-                if (data.colorMap != null) {
-                    configData.colorMap.putAll(data.colorMap);
-                }
-
-                if(data.maxHistory != null) {
-                    configData.maxHistory = data.maxHistory;
-                }
-
-                configData.dontPing.clear();
-                if(data.dontPing != null) {
-                    configData.dontPing = data.dontPing;
-                }
+            JsonObject json = gson.fromJson(reader, JsonObject.class);
+            if (json == null) {
+                return;
             }
+
+            int version = json.has("version") ? json.get("version").getAsInt() : 1;
+
+            if (version == 1) {
+                OldConfigData oldData = gson.fromJson(json, OldConfigData.class);
+                TwitchierChat.LOGGER.info("Version 1 config detected, migrating");
+                migrate(oldData);
+                writeConfig();
+                return;
+            }
+
+            if (version != 2) {
+                TwitchierChat.LOGGER.warn("Unknown config version overwriting");
+                writeConfig();
+                return;
+            }
+
+            ConfigData data = gson.fromJson(json, ConfigData.class);
+
+
+            if (data.serverAddress != null) {
+
+                configData.serverAddress = data.serverAddress;
+            }
+
+            if (data.serverPort != null) {
+                configData.serverPort = data.serverPort;
+            }
+
+            if (data.maxHistory != null) {
+                configData.maxHistory = data.maxHistory;
+            }
+
+            configData.users.clear();
+            if (data.users != null) {
+                configData.users = data.users;
+            }
+
+
         } catch (IOException e) {
             TwitchierChat.LOGGER.error("Failed to read config file: ", e);
         }
@@ -135,13 +179,49 @@ public class Config {
 
         }
     }
+    public static boolean removeAlias(UUID player,String name) {
+        User user = getUser(player);
+        boolean result = user.Aliases.remove(name.toLowerCase());
+        writeConfig();
+        return result;
+    }
+
+    public static boolean addAlias(UUID player,String name) {
+       User user = getUser(player);
+       boolean result = user.Aliases.add(name.toLowerCase());
+       writeConfig();
+       return result;
+    }
+
+    public static String[] getAliases(UUID player) {
+        User user = getUser(player);
+        return user.Aliases.toArray(new String[0]);
+    }
+
+
+    public static class User {
+        public boolean isManager = false;
+        public boolean shouldPing = true;
+        public boolean shouldReplyPing = true;
+        public Integer color = null;
+        public HashSet<String> Aliases = new HashSet<>();
+    }
 
     private static class ConfigData {
+        public Integer version = 2;
+
         public String serverAddress = null;
         public Integer serverPort = null;
+        public Integer maxHistory = 100;
+        public HashMap<UUID, User> users = new HashMap<>();
+    }
+
+    private static class OldConfigData {
         public final HashSet<UUID> managers = new HashSet<>();
+        public final HashMap<UUID, Integer> colorMap = new HashMap<>();
+        public String serverAddress = null;
+        public Integer serverPort = null;
         public HashSet<UUID> dontPing = new HashSet<>();
         public Integer maxHistory = 100;
-        public final HashMap<UUID, Integer> colorMap = new HashMap<>();
     }
 }

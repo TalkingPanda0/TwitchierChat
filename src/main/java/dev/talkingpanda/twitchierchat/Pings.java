@@ -25,7 +25,7 @@ public class Pings {
 
         UUID receiverUUID = receiver.getUUID();
 
-        if (!Config.shouldPing(receiverUUID) || message.sender().equals(receiverUUID)) {
+        if (!Config.shouldPing(receiverUUID, false) || message.sender().equals(receiverUUID)) {
             return;
         }
 
@@ -35,12 +35,12 @@ public class Pings {
         }
     }
 
-    private static void handleCommand(CommandContext<CommandSourceStack> context, boolean shouldPing) {
+    private static void handleCommand(CommandContext<CommandSourceStack> context, boolean reply, boolean shouldPing) {
         ServerPlayer player = context.getSource().getPlayer();
         if (player == null) {
             return;
         }
-        Config.setPing(player.getUUID(), shouldPing);
+        Config.setPing(player.getUUID(), reply, shouldPing);
     }
 
     public static void registerCommand(CommandDispatcher<CommandSourceStack> dispatcher) {
@@ -49,22 +49,34 @@ public class Pings {
                             if (player == null) {
                                 return 0;
                             }
-                            boolean status = Config.shouldPing(player.getUUID());
-                            context.getSource().sendSuccess(() -> Component.literal("Your pings are currently " + (status ? "on" : "off")), false);
+                            boolean status = Config.shouldPing(player.getUUID(), false);
+                            boolean replyStatus = Config.shouldPing(player.getUUID(), true);
+
+                            context.getSource().sendSuccess(() -> Component.literal("Your pings are currently " + (status ? "on" : "off") + ". Your reply pings are currently " + (replyStatus ? "on" : "off")), false);
 
                             return 1;
                         })
                         .then(Commands.literal("on").executes(context -> {
-                            handleCommand(context, true);
+                            handleCommand(context, false, true);
                             context.getSource().sendSuccess(() -> Component.literal("Turned on your pings"), false);
                             return 1;
                         })).then(Commands.literal("off").executes(context -> {
-                            handleCommand(context, false);
+                            handleCommand(context, false, false);
                             context.getSource().sendSuccess(() -> Component.literal("Turned off your pings"), false);
-
-
                             return 1;
                         }))
+                        .then(Commands.literal("reply")
+                                .then(Commands.literal("on").executes(context -> {
+                                    handleCommand(context, true, true);
+                                    context.getSource().sendSuccess(() -> Component.literal("Turned on your reply pings"), false);
+                                    return 1;
+                                }))
+                                .then(Commands.literal("off").executes(context -> {
+                                    handleCommand(context, true, false);
+                                    context.getSource().sendSuccess(() -> Component.literal("Turned off your reply pings"), false);
+                                    return 1;
+                                }))
+                        )
         );
     }
 }
