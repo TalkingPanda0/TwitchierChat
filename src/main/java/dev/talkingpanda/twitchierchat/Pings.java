@@ -11,10 +11,7 @@ import net.minecraft.server.level.ServerPlayer;
 import net.minecraft.sounds.SoundEvents;
 import net.minecraft.sounds.SoundSource;
 
-import java.util.HashSet;
 import java.util.UUID;
-import java.util.regex.Matcher;
-import java.util.regex.Pattern;
 
 public class Pings {
 
@@ -24,25 +21,18 @@ public class Pings {
     }
 
 
-    public static void handlePings(PlayerChatMessage message) {
-        String regex = String.join("|",TwitchierChat.minecraftServer.getPlayerList().getPlayerNamesArray());
-        Matcher matcher = Pattern.compile(regex,Pattern.CASE_INSENSITIVE).matcher(message.signedContent());
+    public static void handlePings(PlayerChatMessage message, ServerPlayer receiver) {
 
-        HashSet<ServerPlayer> pings = new HashSet<>();
+        UUID receiverUUID = receiver.getUUID();
 
-        while (matcher.find()) {
-            ServerPlayer player = TwitchierChat.minecraftServer.getPlayerList().getPlayerByName(matcher.group());
-            if(player == null) {
-                continue;
-            }
-
-            UUID uuid = player.getUUID();
-
-            if (Config.shouldPing(uuid) && !message.sender().equals(uuid)) {
-                pings.add(player);
-            }
+        if (!Config.shouldPing(receiverUUID) || message.sender().equals(receiverUUID)) {
+            return;
         }
-        pings.forEach(Pings::ping);
+
+        String name = receiver.getPlainTextName().toLowerCase();
+        if (message.signedContent().toLowerCase().contains(name)) {
+            ping(receiver);
+        }
     }
 
     private static void handleCommand(CommandContext<CommandSourceStack> context, boolean shouldPing) {

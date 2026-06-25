@@ -7,11 +7,12 @@
     "AnvilMenuMixin",
     "DedicatedServerMixin",
     "OutgoingChatMessageMixin",
+    "OutgoingChatMessagePlayerMixin",
     "PlayerListMixin",
+    "PlayerMixin",
     "ServerGamePacketListenerImplMixin",
     "ServerPlayerMixin",
-    "SignBlockEntityMixin",
-    "PlayerMixin"
+    "SignBlockEntityMixin"
   ],
   "client": [
   ],
