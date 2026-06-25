@@ -62,6 +62,7 @@ Will reload the config file from disk
 
 Adds emote with name `<emote>` from `<sourceUrl>` with size `<tileSize>` and framerate `<fps>`. Can be run by operators or managers.
 
+
 `<emote>` can't be longer than 14 characters. 
 
 ### `/emotes remove <emote>`
@@ -79,3 +80,45 @@ Sends the resource pack to the person running it.
 ### `/emotes list`
 
 Shows a list of every emote.
+
+## Pings
+
+###  `/ping`
+
+Shows your current ping status.
+
+### `/ping on|off`
+
+Turns pings on or off.
+
+### `/ping reply on|off`
+
+Turns pings on or off for replies.
+
+### `/ping alias`
+
+Lists your current aliases.
+
+### `/ping alias add <alias>`
+
+Adds `<alias>` to your aliases.
+
+### `/ping alias remove <alias>`
+
+Removes `<alias>` from your aliases.
+
+### `/ping sound <sound>`
+
+Sets your ping sound `<sound>`.
+
+### `/ping resetSound`
+
+Resets your ping sound.
+
+### `/ping block <player>`
+
+Prevents `<player>` from pinging you.
+
+### `/ping unblock <player>`
+
+Allows `<player>` to ping you again.
