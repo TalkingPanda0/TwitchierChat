@@ -20,8 +20,6 @@ import java.util.HashMap;
 import java.util.HashSet;
 import java.util.UUID;
 
-import static net.minecraft.core.Holder.direct;
-
 public class Config {
     private static final Path configPath = Path.of(TwitchierChat.configDir.toString(), "config.json");
     private static final File configFile = configPath.toFile();
@@ -72,8 +70,13 @@ public class Config {
         writeConfig();
     }
 
-    public static boolean shouldPing(UUID player, boolean reply) {
+    public static boolean shouldPing(UUID player, UUID sender, boolean reply) {
         User user = getUser(player);
+
+        if (user.blockedPlayers.contains(sender)) {
+            return false;
+        }
+
         return reply ? user.shouldReplyPing : user.shouldPing;
     }
 
@@ -193,24 +196,24 @@ public class Config {
 
     public static boolean removeAlias(UUID player, String name) {
         User user = getUser(player);
-        boolean result = user.Aliases.remove(name.toLowerCase());
+        boolean result = user.aliases.remove(name.toLowerCase());
         writeConfig();
         return result;
     }
 
     public static boolean addAlias(UUID player, String name) {
         User user = getUser(player);
-        boolean result = user.Aliases.add(name.toLowerCase());
+        boolean result = user.aliases.add(name.toLowerCase());
         writeConfig();
         return result;
     }
 
     public static String[] getAliases(UUID player) {
         User user = getUser(player);
-        return user.Aliases.toArray(new String[0]);
+        return user.aliases.toArray(new String[0]);
     }
 
-    public static void setPingSound(UUID player ,Identifier sound){
+    public static void setPingSound(UUID player, Identifier sound) {
         getUser(player).pingSound = sound;
         writeConfig();
     }
@@ -223,12 +226,31 @@ public class Config {
         return Holder.direct(SoundEvent.createVariableRangeEvent(user.pingSound));
     }
 
+    public static boolean blockPlayer(UUID player, UUID blocked) {
+        User user = getUser(player);
+        boolean result = user.blockedPlayers.add(blocked);
+        writeConfig();
+        return result;
+    }
+
+    public static boolean unblockPlayer(UUID player, UUID blocked) {
+        User user = getUser(player);
+        boolean result = user.blockedPlayers.remove(blocked);
+        writeConfig();
+        return result;
+    }
+
+    public static UUID[] getBlockedPlayers(UUID player) {
+        return getUser(player).blockedPlayers.toArray(UUID[]::new);
+    }
+
     public static class User {
         public boolean isManager = false;
         public boolean shouldPing = true;
         public boolean shouldReplyPing = true;
         public Integer color = null;
-        public HashSet<String> Aliases = new HashSet<>();
+        public HashSet<String> aliases = new HashSet<>();
+        public HashSet<UUID> blockedPlayers = new HashSet<>();
         public Identifier pingSound = null;
     }
 

@@ -6,6 +6,7 @@ import com.mojang.brigadier.context.CommandContext;
 import net.minecraft.commands.CommandSourceStack;
 import net.minecraft.commands.Commands;
 import net.minecraft.commands.SharedSuggestionProvider;
+import net.minecraft.commands.arguments.GameProfileArgument;
 import net.minecraft.commands.arguments.IdentifierArgument;
 import net.minecraft.commands.synchronization.SuggestionProviders;
 import net.minecraft.network.chat.Component;
@@ -13,8 +14,12 @@ import net.minecraft.network.chat.PlayerChatMessage;
 import net.minecraft.network.protocol.game.ClientboundSoundPacket;
 import net.minecraft.resources.Identifier;
 import net.minecraft.server.level.ServerPlayer;
+import net.minecraft.server.players.NameAndId;
+import net.minecraft.server.players.PlayerList;
 import net.minecraft.sounds.SoundSource;
+import net.minecraft.world.entity.player.Player;
 
+import java.util.Collection;
 import java.util.UUID;
 
 public class Pings {
@@ -28,8 +33,8 @@ public class Pings {
     public static void handlePings(PlayerChatMessage message, ServerPlayer receiver) {
 
         UUID receiverUUID = receiver.getUUID();
-
-        if (!Config.shouldPing(receiverUUID, false) || message.sender().equals(receiverUUID)) {
+        UUID senderUUID = message.sender();
+        if (!Config.shouldPing(receiverUUID, senderUUID, false) || senderUUID.equals(receiverUUID)) {
             return;
         }
 
@@ -63,8 +68,8 @@ public class Pings {
                             if (player == null) {
                                 return 0;
                             }
-                            boolean status = Config.shouldPing(player.getUUID(), false);
-                            boolean replyStatus = Config.shouldPing(player.getUUID(), true);
+                            boolean status = Config.shouldPing(player.getUUID(), null, false);
+                            boolean replyStatus = Config.shouldPing(player.getUUID(), null, true);
 
                             context.getSource().sendSuccess(() -> Component.literal("Your pings are currently " + (status ? "on" : "off") + ". Your reply pings are currently " + (replyStatus ? "on" : "off")), false);
 
@@ -155,6 +160,7 @@ public class Pings {
                     return 1;
                 })
         )));
+
         dispatcher.register(Commands.literal("ping").requires(CommandSourceStack::isPlayer).then(Commands.literal("resetSound").executes(context -> {
             ServerPlayer player = context.getSource().getPlayer();
             if (player == null) {
@@ -163,5 +169,48 @@ public class Pings {
             Config.setPingSound(player.getUUID(), null);
             return 1;
         })));
+
+        dispatcher.register(Commands.literal("ping").requires(CommandSourceStack::isPlayer)
+                .then(Commands.literal("block")
+                        .then(Commands.argument("player", GameProfileArgument.gameProfile())
+                                .suggests((c, p) -> {
+                                    PlayerList list = (c.getSource()).getServer().getPlayerList();
+                                    return SharedSuggestionProvider.suggest(list.getPlayers().stream().map(Player::nameAndId).map(NameAndId::name), p);
+                                }).executes(context -> {
+                                    ServerPlayer player = context.getSource().getPlayer();
+                                    if (player == null) {
+                                        return 0;
+                                    }
+                                    Collection<NameAndId> players = GameProfileArgument.getGameProfiles(context, "player");
+                                    for (NameAndId p : players) {
+                                        if (Config.blockPlayer(player.getUUID(), p.id())) {
+                                            context.getSource().sendSuccess(() -> Component.literal(p.name() + " is now blocked"), false);
+                                        } else {
+                                            context.getSource().sendFailure(Component.literal(p.name() + " is already blocked"));
+                                        }
+                                    }
+                                    return 1;
+                                })
+                        ))
+                .then(Commands.literal("unblock").then(Commands.argument("player", GameProfileArgument.gameProfile())
+                        .suggests((c, p) -> {
+                            PlayerList list = (c.getSource()).getServer().getPlayerList();
+                            return SharedSuggestionProvider.suggest(list.getPlayers().stream().map(Player::nameAndId).map(NameAndId::name), p);
+                        }).executes(context -> {
+                            ServerPlayer player = context.getSource().getPlayer();
+                            if (player == null) {
+                                return 0;
+                            }
+                            Collection<NameAndId> players = GameProfileArgument.getGameProfiles(context, "player");
+                            for (NameAndId p : players) {
+                                if (Config.unblockPlayer(player.getUUID(), p.id())) {
+                                    context.getSource().sendSuccess(() -> Component.literal(p.name() + " is now unblocked"), false);
+                                } else {
+                                    context.getSource().sendFailure(Component.literal(p.name() + " is not blocked"));
+                                }
+                            }
+                            return 1;
+                        })))
+        );
     }
 }

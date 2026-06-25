@@ -71,8 +71,11 @@ public class Replies {
 
                         playerList.broadcastSystemMessage(Component.literal("Replying to " + msg.getFirst().getPlainTextName() + ": ").append(msg.getSecond()).withStyle(Style.EMPTY.withShadowColor(CommonColors.BLACK).withColor(ChatFormatting.GRAY)), false);
                         playerList.broadcastChatMessage(message, source, ChatType.bind(ChatType.CHAT, source));
+
                         UUID uuid = msg.getFirst().getUUID();
-                        if (Config.shouldPing(uuid,true) && uuid != sourcePlayer.getUUID()) {
+                        UUID sourceUUID = sourcePlayer.getUUID();
+
+                        if (Config.shouldPing(uuid, sourceUUID, true) && !uuid.equals(sourceUUID)) {
                             Pings.ping(msg.getFirst());
                         }
                     });
