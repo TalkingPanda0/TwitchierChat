@@ -15,8 +15,17 @@ public class PlayerParser implements TextParser{
 
 
     @Override
+    public String getStart() {
+        return "<";
+    }
+
+    @Override
+    public @Nullable String getEnd() {
+        return ">";
+    }
+
+    @Override
     public @Nullable MutableComponent parse(String input) {
-        if(!input.startsWith("<") || !input.endsWith(">")) return null;
         String name = input.substring(1,input.length()-1);
         return getPlayerHead(name);
     }

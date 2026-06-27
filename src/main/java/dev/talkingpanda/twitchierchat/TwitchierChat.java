@@ -58,31 +58,74 @@ public class TwitchierChat implements DedicatedServerModInitializer {
         if (content == null) return null;
         MutableComponent result = Component.empty();
         boolean modified = false;
-        String[] inputs = content.split(" ");
-        for (int i = 0; i < inputs.length; i++) {
-            String input = inputs[i];
 
-            @Nullable Component parserResult = null;
-            for (var parser : PARSERS) {
+        int startIndex = -1;
+        @Nullable TextParser currentParser = null;
+
+        int lastNonParsedIndex = 0;
+
+        for (int i = 0; i < content.length(); i++) {
+            for (var parser: PARSERS) {
+                if (currentParser != null && currentParser != parser) continue;
+
+                // Will continue the loop until it finds an important character :3
+                if (startIndex == -1) {
+                    String start = parser.getStart();
+                    if (content.regionMatches(i, start, 0, start.length())) {
+                        startIndex = i;
+                        currentParser = parser;
+                        i += start.length()-1; // skip forward
+                    }
+                    continue;
+                }
+
+                String end = parser.getEnd();
+
+                boolean isEnd = i >= content.length()-1;
+                boolean isWhiteSpace = content.charAt(i) == ' ';
+
+                if (end != null && isWhiteSpace) {
+                    startIndex = -1;
+                    currentParser = null;
+                    continue;
+                }
+
+                int endIndexEx = i;
+                if (end == null) {
+                    if (!isEnd && !isWhiteSpace) continue;
+                } else if (!content.regionMatches(i, end, 0, end.length())) continue;
+                else {
+                    i += end.length()-1;
+                    endIndexEx = i + 1;
+                }
+
+                @Nullable Component parserResult = null;
+
                 try {
-                    parserResult = parser.parse(input);
+                    parserResult = parser.parse(content.substring(startIndex, endIndexEx));
                 } catch (Exception e) {
                     TwitchierChat.LOGGER.error("Failed parsing message", e);
                 }
-                if (parserResult != null) break;
-            }
-            if (parserResult == null) {
-                result.append(Component.literal(input));
-            } else {
-                modified = true;
-                result.append(parserResult);
-            }
-            if (i != inputs.length - 1) {
-                result.append(" ");
+
+                if (parserResult != null) {
+                    modified = true;
+                    result.append(Component.literal(content.substring(lastNonParsedIndex, startIndex)));
+                    result.append(parserResult);
+                    lastNonParsedIndex = endIndexEx;
+                }
+
+                startIndex = -1;
+                currentParser = null;
+                break; //very important
             }
         }
 
-        if (modified) return result;
+        if (modified) {
+            if (lastNonParsedIndex < content.length()) {
+                result.append(Component.literal(content.substring(lastNonParsedIndex)));
+            }
+            return result;
+        }
 
         return null;
     }

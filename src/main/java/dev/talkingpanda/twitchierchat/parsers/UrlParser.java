@@ -10,11 +10,17 @@ import static net.minecraft.util.Util.parseAndValidateUntrustedUri;
 
 public class UrlParser implements TextParser{
     @Override
-    public @Nullable MutableComponent parse(String input) {
-        if(!input.startsWith("http")) {
-            return null;
-        }
+    public String getStart() {
+        return "http";
+    }
 
+    @Override
+    public @Nullable String getEnd() {
+        return null;
+    }
+
+    @Override
+    public @Nullable MutableComponent parse(String input) {
         URI uri;
 
         try {
