@@ -93,6 +93,7 @@ public class TwitchierChat implements DedicatedServerModInitializer {
                 int endIndexEx = i;
                 if (end == null) {
                     if (!isEnd && !isWhiteSpace) continue;
+                    if (isEnd) endIndexEx++;
                 } else if (!content.regionMatches(i, end, 0, end.length())) continue;
                 else {
                     i += end.length()-1;
