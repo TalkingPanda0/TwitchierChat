@@ -10,6 +10,8 @@ import java.util.regex.Pattern;
 
 public class PlayerParser implements TextParser{
 
+    private static final Pattern namePattern = Pattern.compile("^\\w{3,16}$");
+
     private static MutableComponent getPlayerHead(String player) {
         var headObject = new PlayerSprite(ResolvableProfile.createUnresolved(player), true);
         return Component.object(headObject).setStyle(Style.EMPTY.withHoverEvent(new HoverEvent.ShowText(Component.object(headObject).append(" " + player))).withClickEvent(new ClickEvent.CopyToClipboard("<" + player + ">")).withColor(ChatFormatting.WHITE));
@@ -29,7 +31,7 @@ public class PlayerParser implements TextParser{
     @Override
     public @Nullable MutableComponent parse(String input) {
         String name = input.substring(1,input.length()-1);
-        if (!Pattern.compile("^\\w{3,16}$").matcher(name).matches()) return null;
+        if (!namePattern.matcher(name).matches()) return null;
         return getPlayerHead(name);
     }
 

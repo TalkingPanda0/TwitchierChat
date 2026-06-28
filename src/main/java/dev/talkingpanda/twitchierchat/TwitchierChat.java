@@ -43,6 +43,7 @@ public class TwitchierChat implements DedicatedServerModInitializer {
 
     public static DedicatedServer minecraftServer;
 
+    private static final Pattern whiteSpace = Pattern.compile("\\s");
 
     public static @Nullable MutableComponent formatText(Component text) {
         if (text == null) return null;
@@ -59,7 +60,6 @@ public class TwitchierChat implements DedicatedServerModInitializer {
         if (content == null) return null;
         MutableComponent result = Component.empty();
         boolean modified = false;
-        Pattern whiteSpace = Pattern.compile("\\s");
 
         int startIndex = -1;
         @Nullable TextParser currentParser = null;
@@ -175,7 +175,7 @@ public class TwitchierChat implements DedicatedServerModInitializer {
                     context.getSource().sendSuccess(() -> Component.literal("Set resource pack address to " + Config.getServerUrl()), true);
                     return 1;
                 }).then(Commands.argument("port", IntegerArgumentType.integer())
-                        .suggests((c, p) -> p.suggest(TwitchierChat.minecraftServer.getServerPort()).buildFuture())
+                        .suggests((_, p) -> p.suggest(TwitchierChat.minecraftServer.getServerPort()).buildFuture())
                         .executes(context -> {
                             String address = StringArgumentType.getString(context, "address");
                             Integer port = IntegerArgumentType.getInteger(context, "port");
