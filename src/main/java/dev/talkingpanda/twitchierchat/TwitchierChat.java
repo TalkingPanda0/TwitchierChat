@@ -32,7 +32,6 @@ import java.nio.file.Files;
 import java.nio.file.Path;
 import java.util.Collection;
 import java.util.List;
-import java.util.regex.Pattern;
 
 public class TwitchierChat implements DedicatedServerModInitializer {
     public static final Path configDir = Path.of("./config/twitchierchat");
@@ -43,7 +42,6 @@ public class TwitchierChat implements DedicatedServerModInitializer {
 
     public static DedicatedServer minecraftServer;
 
-    private static final Pattern whiteSpace = Pattern.compile("\\s");
 
     public static @Nullable MutableComponent formatText(Component text) {
         if (text == null) return null;
@@ -84,7 +82,7 @@ public class TwitchierChat implements DedicatedServerModInitializer {
                 String end = parser.getEnd();
 
                 boolean isEnd = i >= content.length()-1;
-                boolean isWhiteSpace = whiteSpace.matcher(String.valueOf(content.charAt(i))).matches();
+                boolean isWhiteSpace = Character.isWhitespace(content.charAt(i));
 
                 if (end != null && isWhiteSpace) {
                     startIndex = -1;
