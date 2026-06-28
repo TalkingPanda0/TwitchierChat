@@ -126,6 +126,12 @@ public class Config {
 
     public static void readConfig() {
 
+        if(!configFile.exists()) {
+            TwitchierChat.LOGGER.info("Creating default config file");
+            writeConfig();
+            return;
+        }
+
         try (FileReader reader = new FileReader(configFile)) {
             JsonObject json = gson.fromJson(reader, JsonObject.class);
             if (json == null) {
@@ -240,10 +246,6 @@ public class Config {
         return result;
     }
 
-    public static UUID[] getBlockedPlayers(UUID player) {
-        return getUser(player).blockedPlayers.toArray(UUID[]::new);
-    }
-
     public static class User {
         public boolean isManager = false;
         public boolean shouldPing = true;
@@ -255,8 +257,6 @@ public class Config {
     }
 
     private static class ConfigData {
-        public Integer version = 2;
-
         public String serverAddress = null;
         public Integer serverPort = null;
         public Integer maxHistory = 100;
