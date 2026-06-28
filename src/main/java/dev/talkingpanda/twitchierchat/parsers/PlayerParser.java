@@ -6,6 +6,8 @@ import net.minecraft.network.chat.contents.objects.PlayerSprite;
 import net.minecraft.world.item.component.ResolvableProfile;
 import org.jetbrains.annotations.Nullable;
 
+import java.util.regex.Pattern;
+
 public class PlayerParser implements TextParser{
 
     private static MutableComponent getPlayerHead(String player) {
@@ -15,9 +17,19 @@ public class PlayerParser implements TextParser{
 
 
     @Override
+    public String getStart() {
+        return "<";
+    }
+
+    @Override
+    public @Nullable String getEnd() {
+        return ">";
+    }
+
+    @Override
     public @Nullable MutableComponent parse(String input) {
-        if(!input.startsWith("<") || !input.endsWith(">")) return null;
         String name = input.substring(1,input.length()-1);
+        if (!Pattern.compile("^\\w{3,16}$").matcher(name).matches()) return null;
         return getPlayerHead(name);
     }
 

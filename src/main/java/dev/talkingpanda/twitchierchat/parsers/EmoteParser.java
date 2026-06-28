@@ -13,9 +13,20 @@ public class EmoteParser implements TextParser {
         var emoteObject = new AtlasSprite(AtlasIds.GUI, Identifier.fromNamespaceAndPath("emotes", "emotes/" + emote));
         return Component.object(emoteObject).setStyle(Style.EMPTY.withHoverEvent(new HoverEvent.ShowText(Component.object(emoteObject).append(" " + emote))).withClickEvent(new ClickEvent.CopyToClipboard(":" + emote + ":")).withColor(ChatFormatting.WHITE).withoutShadow());
     }
+
+    @Override
+    public String getStart() {
+        return ":";
+    }
+
+    @Override
+    public @Nullable String getEnd() {
+        return ":";
+    }
+
     @Override
     public @Nullable MutableComponent parse(String input) {
-        if(input.length() < 2 || !input.startsWith(":") || !input.endsWith(":")) return null;
+        if(input.length() <= 2) return null;
         String emote = input.substring(1,input.length()-1);
         if (!Emotes.emotes.containsKey(emote)) return null;
 
