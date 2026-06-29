@@ -5,11 +5,11 @@
   "compatibilityLevel": "JAVA_21",
   "mixins": [
     "AnvilMenuMixin",
-    "DedicatedServerMixin",
     "OutgoingChatMessageMixin",
     "OutgoingChatMessagePlayerMixin",
     "PlayerListMixin",
     "PlayerMixin",
+    "ServerConfigurationPacketListenerImplMixin",
     "ServerGamePacketListenerImplMixin",
     "ServerPlayerMixin",
     "SignBlockEntityMixin"
