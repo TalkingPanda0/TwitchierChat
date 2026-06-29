@@ -22,7 +22,6 @@
 # Setup
 - Needs ffmpeg to be installed and on path on the server.
 - You need to [set](#twitchierchat) your server's address for the resource pack.  
-- If the server already has resource packs they will be overridden by the emote resource pack.
 
 
 # Commands
