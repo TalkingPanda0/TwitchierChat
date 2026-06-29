@@ -15,6 +15,7 @@ import net.minecraft.network.chat.ClickEvent;
 import net.minecraft.network.chat.Component;
 import net.minecraft.network.chat.Style;
 import net.minecraft.network.chat.contents.objects.AtlasSprite;
+import net.minecraft.network.protocol.common.ClientboundResourcePackPopPacket;
 import net.minecraft.network.protocol.common.ClientboundResourcePackPushPacket;
 import net.minecraft.network.protocol.game.ClientboundPlayerInfoRemovePacket;
 import net.minecraft.network.protocol.game.ClientboundPlayerInfoUpdatePacket;
@@ -54,6 +55,7 @@ public class Emotes {
     private static final int TILE_SIZE = 128;
     private static final int FPS = 20;
 
+    private static final UUID packId = UUID.nameUUIDFromBytes("twitchierchat".getBytes());
 
     private static boolean commandRequirement(CommandSourceStack source) {
         if (source.permissions().hasPermission(Permissions.COMMANDS_MODERATOR)) {
@@ -327,7 +329,7 @@ public class Emotes {
         if (url == null) {
             return null;
         }
-        return new MinecraftServer.ServerResourcePackInfo(UUID.randomUUID(), "http://" + url + "/emotes.zip", getPackHash(),
+        return new MinecraftServer.ServerResourcePackInfo(packId, "http://" + url + "/emotes.zip", getPackHash(),
                 false, Component.literal("This is the resource pack for emotes.\n If you reject it, you will see ").append(Component.object(new AtlasSprite(AtlasIds.GUI, Identifier.fromNamespaceAndPath("minecraft", "error")))).append(" instead of emotes."));
     }
 
@@ -412,6 +414,8 @@ public class Emotes {
                     context.getSource().sendFailure(Component.literal("Failed to send update packet: player is null.").withColor(CommonColors.RED));
                     return 1;
                 }
+
+                player.connection.send(new ClientboundResourcePackPopPacket(Optional.of(pack.id())));
 
                 player.connection.send(new ClientboundResourcePackPushPacket(
                         pack.id(),
