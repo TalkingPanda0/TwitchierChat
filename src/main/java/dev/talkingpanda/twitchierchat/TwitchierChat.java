@@ -54,7 +54,6 @@ public class TwitchierChat implements DedicatedServerModInitializer {
     }
 
     public static @Nullable MutableComponent formatString(@Nullable String content) {
-
         if (content == null) return null;
         MutableComponent result = Component.empty();
         boolean modified = false;
@@ -75,6 +74,7 @@ public class TwitchierChat implements DedicatedServerModInitializer {
                         startIndex = i;
                         currentParser = parser;
                         i += start.length()-1; // skip forward
+                        break;
                     }
                     continue;
                 }
@@ -87,7 +87,7 @@ public class TwitchierChat implements DedicatedServerModInitializer {
                 if (end != null && isWhiteSpace) {
                     startIndex = -1;
                     currentParser = null;
-                    continue;
+                    break;
                 }
 
                 int endIndexEx = i;
@@ -98,6 +98,17 @@ public class TwitchierChat implements DedicatedServerModInitializer {
                 else {
                     i += end.length()-1;
                     endIndexEx = i + 1;
+                }
+
+                if (startIndex > 0 && content.charAt(startIndex-1) == '\\') {
+                    modified = true;
+                    result.append(Component.literal(content.substring(lastNonParsedIndex, startIndex-1)));
+                    result.append(Component.literal(content.substring(startIndex, endIndexEx)));
+                    lastNonParsedIndex = endIndexEx;
+
+                    startIndex = -1;
+                    currentParser = null;
+                    break;
                 }
 
                 @Nullable Component parserResult = null;
