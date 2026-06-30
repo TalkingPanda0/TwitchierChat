@@ -51,6 +51,16 @@ public class Replies {
         return queue.get(id);
     }
 
+    private static Component formatReplyText(Component original) {
+        MutableComponent result = Component.empty();
+
+        for(Component sibling : original.getSiblings()) {
+            result.append(sibling.copy().setStyle(Style.EMPTY));
+        }
+
+        return result;
+    }
+
     public static void registerCommand(CommandDispatcher<CommandSourceStack> dispatcher) {
 
         dispatcher.register(Commands.literal("reply").requires(CommandSourceStack::isPlayer).then(Commands.argument("messageId", IntegerArgumentType.integer()).then(Commands.argument("message", MessageArgument.message()).executes(context -> {
@@ -69,7 +79,8 @@ public class Replies {
                             return;
                         }
 
-                        playerList.broadcastSystemMessage(Component.literal("Replying to " + msg.getFirst().getPlainTextName() + ": ").append(msg.getSecond()).withStyle(Style.EMPTY.withShadowColor(CommonColors.BLACK).withColor(ChatFormatting.GRAY)), false);
+                        Component replyText = Component.literal("Replying to " + msg.getFirst().getPlainTextName() + ": ").append( formatReplyText(msg.getSecond())  ).withStyle(Style.EMPTY.withShadowColor(CommonColors.BLACK).withColor(ChatFormatting.GRAY));
+                        playerList.broadcastSystemMessage(replyText, false);
                         playerList.broadcastChatMessage(message, source, ChatType.bind(ChatType.CHAT, source));
 
                         UUID uuid = msg.getFirst().getUUID();
