@@ -55,7 +55,7 @@ public class Emotes {
     private static final int TILE_SIZE = 128;
     private static final int FPS = 20;
 
-    private static final UUID packId = UUID.nameUUIDFromBytes("twitchierchat".getBytes());
+    public static final UUID packId = UUID.nameUUIDFromBytes("twitchierchat".getBytes());
 
     private static boolean commandRequirement(CommandSourceStack source) {
         if (source.permissions().hasPermission(Permissions.COMMANDS_MODERATOR)) {
