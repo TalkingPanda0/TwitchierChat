@@ -52,7 +52,7 @@ public class Replies {
     }
 
     private static Component formatReplyText(Component original) {
-        MutableComponent result = Component.empty();
+        MutableComponent result = original.plainCopy();
 
         for(Component sibling : original.getSiblings()) {
             result.append(sibling.copy().setStyle(Style.EMPTY));
