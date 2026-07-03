@@ -3,6 +3,7 @@ package dev.talkingpanda.twitchierchat;
 import com.mojang.brigadier.CommandDispatcher;
 import com.mojang.brigadier.arguments.StringArgumentType;
 import com.mojang.brigadier.context.CommandContext;
+import joptsimple.internal.Strings;
 import net.minecraft.commands.CommandSourceStack;
 import net.minecraft.commands.Commands;
 import net.minecraft.commands.SharedSuggestionProvider;
@@ -104,7 +105,13 @@ public class Pings {
                     if (player == null) {
                         return 0;
                     }
-                    String aliases = String.join(", ", Config.getAliases(player.getUUID()));
+                    var aliasList = Config.getAliases(player.getUUID());
+                    if (aliasList.length == 0) {
+                        context.getSource().sendSuccess(() -> Component.literal("You have no aliases"), false);
+                        return 1;
+                    }
+
+                    String aliases = String.join(", ", aliasList);
                     context.getSource().sendSuccess(() -> Component.literal("Your aliases are: " + aliases), false);
 
                     return 1;
@@ -146,20 +153,37 @@ public class Pings {
         ));
 
 
-        dispatcher.register(Commands.literal("ping").requires(CommandSourceStack::isPlayer).then(Commands.literal("sound").then(Commands.argument("sound", IdentifierArgument.id())
-                .suggests(SuggestionProviders.cast(SuggestionProviders.AVAILABLE_SOUNDS))
-                .executes(context -> {
-                    ServerPlayer player = context.getSource().getPlayer();
-                    if (player == null) {
-                        return 0;
-                    }
-                    Identifier identifier = IdentifierArgument.getId(context, "sound");
-                    Config.setPingSound(player.getUUID(), identifier);
-                    context.getSource().sendSuccess(() -> Component.literal("Set your ping sound to " + identifier.toShortString()), false);
+        dispatcher.register(Commands.literal("ping").requires(CommandSourceStack::isPlayer)
+                .then(Commands.literal("sound").executes(context -> {
+                            ServerPlayer player = context.getSource().getPlayer();
+                            if (player == null) {
+                                return 0;
+                            }
+                            Pings.ping(player);
 
-                    return 1;
-                })
-        )));
+                            var sound = Config.getPingSoundIdentifier(player.getUUID());
+                            if (sound == null) {
+                                context.getSource().sendSuccess(() -> Component.literal("You currently don't have a custom ping sound set"), false);
+                                return 1;
+                            }
+                            context.getSource().sendSuccess(() -> Component.literal("Your current ping sound is " + sound), false);
+                            return 1;
+                        })
+                        .then(Commands.argument("sound", IdentifierArgument.id())
+                                .suggests(SuggestionProviders.cast(SuggestionProviders.AVAILABLE_SOUNDS))
+                                .executes(context -> {
+                                    ServerPlayer player = context.getSource().getPlayer();
+                                    if (player == null) {
+                                        return 0;
+                                    }
+                                    Identifier identifier = IdentifierArgument.getId(context, "sound");
+                                    Config.setPingSound(player.getUUID(), identifier);
+                                    context.getSource().sendSuccess(() -> Component.literal("Set your ping sound to " + identifier.toShortString()), false);
+
+                                    Pings.ping(player);
+                                    return 1;
+                                })
+                        )));
 
         dispatcher.register(Commands.literal("ping").requires(CommandSourceStack::isPlayer).then(Commands.literal("resetSound").executes(context -> {
             ServerPlayer player = context.getSource().getPlayer();
@@ -167,10 +191,27 @@ public class Pings {
                 return 0;
             }
             Config.setPingSound(player.getUUID(), null);
+
+            Pings.ping(player);
+            context.getSource().sendSuccess(() -> Component.literal("Reset your ping sound"), false);
             return 1;
         })));
 
         dispatcher.register(Commands.literal("ping").requires(CommandSourceStack::isPlayer)
+                .then(Commands.literal("blocked").executes(context -> {
+                    ServerPlayer player = context.getSource().getPlayer();
+                    if (player == null) {
+                        return 0;
+                    }
+
+                    String[] blocked = Config.getBlockedPlayers(player.getUUID());
+                    if(blocked.length == 0) {
+                        context.getSource().sendSuccess(() -> Component.literal("You currently don't have any players blocked"),false);
+                        return 1;
+                    }
+                    context.getSource().sendSuccess(() -> Component.literal("Blocked players are: " + Strings.join(blocked,", ")),false);
+                    return 1;
+                }))
                 .then(Commands.literal("block")
                         .then(Commands.argument("player", GameProfileArgument.gameProfile())
                                 .suggests((c, p) -> {

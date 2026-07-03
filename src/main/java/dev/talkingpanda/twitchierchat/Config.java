@@ -224,12 +224,17 @@ public class Config {
         writeConfig();
     }
 
+    public static Identifier getPingSoundIdentifier(UUID player) {
+        return getUser(player).pingSound;
+    }
+
     public static Holder<SoundEvent> getPingSound(UUID player) {
-        User user = getUser(player);
-        if (user.pingSound == null) {
+        Identifier pingSound = getPingSoundIdentifier(player);
+
+        if (pingSound == null) {
             return SoundEvents.NOTE_BLOCK_PLING;
         }
-        return Holder.direct(SoundEvent.createVariableRangeEvent(user.pingSound));
+        return Holder.direct(SoundEvent.createVariableRangeEvent(pingSound));
     }
 
     public static boolean blockPlayer(UUID player, UUID blocked) {
@@ -237,6 +242,26 @@ public class Config {
         boolean result = user.blockedPlayers.add(blocked);
         writeConfig();
         return result;
+    }
+
+    public static String[] getManagers() {
+        return configData.users.entrySet().stream().filter(user -> user.getValue().isManager).map(user -> getNameFromId(user.getKey())).toArray(String[]::new);
+    }
+
+
+    public static String[] getBlockedPlayers(UUID player) {
+        User user = getUser(player);
+        return user.blockedPlayers.stream().map(Config::getNameFromId).toArray(String[]::new);
+    }
+
+    // Very slow
+    public static String getNameFromId(UUID id) {
+        var profile = TwitchierChat.minecraftServer.services().profileResolver().fetchById(id);
+        if(profile.isPresent()) {
+            return profile.get().name();
+        } else {
+            return id.toString();
+        }
     }
 
     public static boolean unblockPlayer(UUID player, UUID blocked) {

@@ -7,6 +7,7 @@ import dev.talkingpanda.twitchierchat.parsers.EmoteParser;
 import dev.talkingpanda.twitchierchat.parsers.PlayerParser;
 import dev.talkingpanda.twitchierchat.parsers.TextParser;
 import dev.talkingpanda.twitchierchat.parsers.UrlParser;
+import joptsimple.internal.Strings;
 import net.fabricmc.api.DedicatedServerModInitializer;
 import net.fabricmc.fabric.api.command.v2.CommandRegistrationCallback;
 import net.fabricmc.fabric.api.event.lifecycle.v1.ServerLifecycleEvents;
@@ -64,7 +65,7 @@ public class TwitchierChat implements DedicatedServerModInitializer {
         int lastNonParsedIndex = 0;
 
         for (int i = 0; i < content.length(); i++) {
-            for (var parser: PARSERS) {
+            for (var parser : PARSERS) {
                 if (currentParser != null && currentParser != parser) continue;
 
                 // Will continue the loop until it finds an important character :3
@@ -73,7 +74,7 @@ public class TwitchierChat implements DedicatedServerModInitializer {
                     if (content.regionMatches(i, start, 0, start.length())) {
                         startIndex = i;
                         currentParser = parser;
-                        i += start.length()-1; // skip forward
+                        i += start.length() - 1; // skip forward
                         break;
                     }
                     continue;
@@ -81,7 +82,7 @@ public class TwitchierChat implements DedicatedServerModInitializer {
 
                 String end = parser.getEnd();
 
-                boolean isEnd = i >= content.length()-1;
+                boolean isEnd = i >= content.length() - 1;
                 boolean isWhiteSpace = Character.isWhitespace(content.charAt(i));
 
                 if (end != null && isWhiteSpace) {
@@ -96,13 +97,13 @@ public class TwitchierChat implements DedicatedServerModInitializer {
                     if (isEnd) endIndexEx++;
                 } else if (!content.regionMatches(i, end, 0, end.length())) continue;
                 else {
-                    i += end.length()-1;
+                    i += end.length() - 1;
                     endIndexEx = i + 1;
                 }
 
-                if (startIndex > 0 && content.charAt(startIndex-1) == '\\') {
+                if (startIndex > 0 && content.charAt(startIndex - 1) == '\\') {
                     modified = true;
-                    result.append(Component.literal(content.substring(lastNonParsedIndex, startIndex-1)));
+                    result.append(Component.literal(content.substring(lastNonParsedIndex, startIndex - 1)));
                     result.append(Component.literal(content.substring(startIndex, endIndexEx)));
                     lastNonParsedIndex = endIndexEx;
 
@@ -144,7 +145,17 @@ public class TwitchierChat implements DedicatedServerModInitializer {
 
     private static void registerCommand(CommandDispatcher<CommandSourceStack> dispatcher) {
         dispatcher.register(Commands.literal("twitchierchat").requires(source -> source.permissions().hasPermission(Permissions.COMMANDS_MODERATOR)).then(
-                Commands.literal("managers").then(Commands.literal("add").then(Commands.argument("player", GameProfileArgument.gameProfile())
+                Commands.literal("managers").executes(context -> {
+                            String[] managers = Config.getManagers();
+                            if (managers.length == 0) {
+                                context.getSource().sendSuccess(() -> Component.literal("There currently are no managers"), false);
+                                return 1;
+                            }
+
+                            context.getSource().sendSuccess(() -> Component.literal("Current managers are: " + Strings.join(managers, ", ")), false);
+                            return 1;
+                        })
+                        .then(Commands.literal("add").then(Commands.argument("player", GameProfileArgument.gameProfile())
                                 .suggests((c, p) -> {
                                     PlayerList list = (c.getSource()).getServer().getPlayerList();
                                     return SharedSuggestionProvider.suggest(list.getPlayers().stream().map(Player::nameAndId).map(NameAndId::name), p);

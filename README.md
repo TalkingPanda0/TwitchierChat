@@ -35,6 +35,10 @@ Sets the server address used for the emote resource pack. Requires operator priv
 
 `<port>` will be set to the port you have in server.properties if empty.
 
+### `/twitchierchat managers`
+
+Lists current managers.
+
 ### `/twitchierchat managers add <player>`
 
 Will make `<player>` a manager. 
@@ -94,17 +98,21 @@ Turns pings on or off.
 
 Turns pings on or off for replies.
 
-### `/ping alias`
+### `/ping aliases`
 
 Lists your current aliases.
 
-### `/ping alias add <alias>`
+### `/ping aliases add <alias>`
 
 Adds `<alias>` to your aliases.
 
-### `/ping alias remove <alias>`
+### `/ping aliases remove <alias>`
 
 Removes `<alias>` from your aliases.
+
+### `/ping sound`
+
+Will show and play your current ping sound.
 
 ### `/ping sound <sound>`
 
@@ -113,6 +121,10 @@ Sets your ping sound `<sound>`.
 ### `/ping resetSound`
 
 Resets your ping sound.
+
+### `/ping blocked`
+
+Shows the players you currently have blocked.
 
 ### `/ping block <player>`
 
