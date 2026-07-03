@@ -257,6 +257,7 @@ public class Config {
     }
 
     private static class ConfigData {
+        public Integer version = 2;
         public String serverAddress = null;
         public Integer serverPort = null;
         public Integer maxHistory = 100;
