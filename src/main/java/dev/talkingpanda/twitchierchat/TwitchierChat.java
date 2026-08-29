@@ -3,10 +3,7 @@ package dev.talkingpanda.twitchierchat;
 import com.mojang.brigadier.CommandDispatcher;
 import com.mojang.brigadier.arguments.IntegerArgumentType;
 import com.mojang.brigadier.arguments.StringArgumentType;
-import dev.talkingpanda.twitchierchat.parsers.EmoteParser;
-import dev.talkingpanda.twitchierchat.parsers.PlayerParser;
-import dev.talkingpanda.twitchierchat.parsers.TextParser;
-import dev.talkingpanda.twitchierchat.parsers.UrlParser;
+import dev.talkingpanda.twitchierchat.parsers.*;
 import joptsimple.internal.Strings;
 import net.fabricmc.api.DedicatedServerModInitializer;
 import net.fabricmc.fabric.api.command.v2.CommandRegistrationCallback;
@@ -31,15 +28,16 @@ import org.slf4j.LoggerFactory;
 
 import java.nio.file.Files;
 import java.nio.file.Path;
+import java.util.ArrayList;
 import java.util.Collection;
-import java.util.List;
 
 public class TwitchierChat implements DedicatedServerModInitializer {
     public static final Path configDir = Path.of("./config/twitchierchat");
 
 
     public final static Logger LOGGER = LoggerFactory.getLogger("twitchierchat");
-    private static final List<TextParser> PARSERS = List.of(new EmoteParser(), new PlayerParser(), new UrlParser());
+    // Sorted from biggest start to smallest
+    private static final TextParser[] PARSERS = { new UrlParser(), new ltalicParser(), new BoldParser(), new UnderlineParser(), new EmoteParser(), new PlayerParser(), new ItalicParser(), new StrikethroughParser() };
 
     public static DedicatedServer minecraftServer;
 
@@ -54,6 +52,47 @@ public class TwitchierChat implements DedicatedServerModInitializer {
         return formatString(literal);
     }
 
+    private static MutableComponent comboParse(TextParser outerParser, String content, ArrayList<Integer> parsersRemoved) {
+        @Nullable MutableComponent parserResult = null;
+
+        int startSize = outerParser.getStart().length();
+        int endSize = 0;
+
+        if (outerParser.getEnd() != null) {
+            endSize = outerParser.getEnd().length();
+        }
+
+        if (content.length() > startSize + endSize + 1) {
+            for (int i = 0; i < PARSERS.length - parsersRemoved.size(); i++) {
+                TextParser parser = PARSERS[i];
+                String start = parser.getStart();
+                if (content.regionMatches(startSize, start, 0, start.length())) {
+                    String end = parser.getEnd();
+
+                    if (end != null && !content.regionMatches(content.length() - end.length() - endSize, end, 0, end.length())) {
+                        continue;
+                    }
+
+                    String contentToParse = content.substring(startSize, content.length() - endSize);
+
+                    if (parser.comboable()) {
+                        parsersRemoved.add(i);
+                        parserResult = comboParse(parser, contentToParse, parsersRemoved);
+                    } else {
+                        parserResult = parser.parse(contentToParse);
+                    }
+                    break;
+                }
+            }
+        }
+
+        if (parserResult == null) {
+            return outerParser.parse(content);
+        } else {
+            return outerParser.parse(parserResult);
+        }
+    }
+
     public static @Nullable MutableComponent formatString(@Nullable String content) {
         if (content == null) return null;
         MutableComponent result = Component.empty();
@@ -65,7 +104,8 @@ public class TwitchierChat implements DedicatedServerModInitializer {
         int lastNonParsedIndex = 0;
 
         for (int i = 0; i < content.length(); i++) {
-            for (var parser : PARSERS) {
+            for (int j = 0; j < PARSERS.length; j++) {
+                TextParser parser = PARSERS[j];
                 if (currentParser != null && currentParser != parser) continue;
 
                 // Will continue the loop until it finds an important character :3
@@ -115,7 +155,13 @@ public class TwitchierChat implements DedicatedServerModInitializer {
                 @Nullable Component parserResult = null;
 
                 try {
-                    parserResult = parser.parse(content.substring(startIndex, endIndexEx));
+                    if (parser.comboable()) {
+                        ArrayList<Integer> removedParsers = new ArrayList<>(PARSERS.length);
+                        removedParsers.add(j);
+                        parserResult = comboParse(parser, content.substring(startIndex, endIndexEx), removedParsers);
+                    } else {
+                        parserResult = parser.parse(content.substring(startIndex, endIndexEx));
+                    }
                 } catch (Exception e) {
                     TwitchierChat.LOGGER.error("Failed parsing message", e);
                 }
