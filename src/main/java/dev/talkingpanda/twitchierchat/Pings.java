@@ -3,7 +3,6 @@ package dev.talkingpanda.twitchierchat;
 import com.mojang.brigadier.CommandDispatcher;
 import com.mojang.brigadier.arguments.StringArgumentType;
 import com.mojang.brigadier.context.CommandContext;
-import joptsimple.internal.Strings;
 import net.minecraft.commands.CommandSourceStack;
 import net.minecraft.commands.Commands;
 import net.minecraft.commands.SharedSuggestionProvider;
@@ -20,10 +19,20 @@ import net.minecraft.server.players.PlayerList;
 import net.minecraft.sounds.SoundSource;
 import net.minecraft.world.entity.player.Player;
 
+import java.util.*;
+import java.util.regex.Pattern;
+import java.util.stream.Collectors;
 import java.util.Collection;
 import java.util.UUID;
 
+
 public class Pings {
+
+    private static boolean containsWordInList(String content, String[] words) {
+        String wordList = Arrays.stream(words).map(Pattern::quote).collect(Collectors.joining("|"));
+
+        return Pattern.compile("(?<!\\w)(" + wordList + ")(?!\\w)", Pattern.CASE_INSENSITIVE).matcher(content).find();
+    }
 
     public static void ping(ServerPlayer player) {
         var packet = new ClientboundSoundPacket(Config.getPingSound(player.getUUID()), SoundSource.UI, player.getX(), player.getY(), player.getZ(), 1.0f, 1.0f, 0);
@@ -35,24 +44,19 @@ public class Pings {
 
         UUID receiverUUID = receiver.getUUID();
         UUID senderUUID = message.sender();
-        if (!Config.shouldPing(receiverUUID, senderUUID, false) || senderUUID.equals(receiverUUID)) {
-            return;
-        }
 
-        String name = receiver.getPlainTextName().toLowerCase();
-        String content = message.signedContent().toLowerCase();
-        if (content.contains(name)) {
-            ping(receiver);
+        if (!Config.shouldPing(receiverUUID, senderUUID, false)) {
             return;
         }
 
         String[] aliases = Config.getAliases(receiverUUID);
-        for (String alias : aliases) {
-            if (content.contains(alias)) {
-                ping(receiver);
-                return;
-            }
+        String[] words = Arrays.copyOf(aliases, aliases.length +1);
+        words[aliases.length] = receiver.getPlainTextName();
+
+        if (containsWordInList(message.signedContent(),words)) {
+            ping(receiver);
         }
+
     }
 
     private static void handleCommand(CommandContext<CommandSourceStack> context, boolean reply, boolean shouldPing) {
