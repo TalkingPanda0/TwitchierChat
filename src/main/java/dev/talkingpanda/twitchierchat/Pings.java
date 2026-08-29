@@ -3,6 +3,7 @@ package dev.talkingpanda.twitchierchat;
 import com.mojang.brigadier.CommandDispatcher;
 import com.mojang.brigadier.arguments.StringArgumentType;
 import com.mojang.brigadier.context.CommandContext;
+import joptsimple.internal.Strings;
 import net.minecraft.commands.CommandSourceStack;
 import net.minecraft.commands.Commands;
 import net.minecraft.commands.SharedSuggestionProvider;
@@ -213,7 +214,7 @@ public class Pings {
                         context.getSource().sendSuccess(() -> Component.literal("You currently don't have any players blocked"),false);
                         return 1;
                     }
-                    context.getSource().sendSuccess(() -> Component.literal("Blocked players are: " + Strings.join(blocked,", ")),false);
+                   context.getSource().sendSuccess(() -> Component.literal("Blocked players are: " + Strings.join(blocked,", ")),false);
                     return 1;
                 }))
                 .then(Commands.literal("block")
