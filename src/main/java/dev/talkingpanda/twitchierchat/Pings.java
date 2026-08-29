@@ -12,7 +12,7 @@ import net.minecraft.commands.arguments.IdentifierArgument;
 import net.minecraft.commands.synchronization.SuggestionProviders;
 import net.minecraft.network.chat.Component;
 import net.minecraft.network.chat.PlayerChatMessage;
-import net.minecraft.network.protocol.game.ClientboundSoundPacket;
+import net.minecraft.network.protocol.game.ClientboundSoundEntityPacket;
 import net.minecraft.resources.Identifier;
 import net.minecraft.server.level.ServerPlayer;
 import net.minecraft.server.players.NameAndId;
@@ -20,11 +20,11 @@ import net.minecraft.server.players.PlayerList;
 import net.minecraft.sounds.SoundSource;
 import net.minecraft.world.entity.player.Player;
 
-import java.util.*;
-import java.util.regex.Pattern;
-import java.util.stream.Collectors;
+import java.util.Arrays;
 import java.util.Collection;
 import java.util.UUID;
+import java.util.regex.Pattern;
+import java.util.stream.Collectors;
 
 
 public class Pings {
@@ -36,7 +36,7 @@ public class Pings {
     }
 
     public static void ping(ServerPlayer player) {
-        var packet = new ClientboundSoundPacket(Config.getPingSound(player.getUUID()), SoundSource.UI, player.getX(), player.getY(), player.getZ(), 1.0f, 1.0f, 0);
+        var packet = new ClientboundSoundEntityPacket(Config.getPingSound(player.getUUID()), SoundSource.UI, player, 1.0f, 1.0f, 0);
         player.connection.send(packet);
     }
 
@@ -51,10 +51,10 @@ public class Pings {
         }
 
         String[] aliases = Config.getAliases(receiverUUID);
-        String[] words = Arrays.copyOf(aliases, aliases.length +1);
+        String[] words = Arrays.copyOf(aliases, aliases.length + 1);
         words[aliases.length] = receiver.getPlainTextName();
 
-        if (containsWordInList(message.signedContent(),words)) {
+        if (containsWordInList(message.signedContent(), words)) {
             ping(receiver);
         }
 
@@ -210,11 +210,11 @@ public class Pings {
                     }
 
                     String[] blocked = Config.getBlockedPlayers(player.getUUID());
-                    if(blocked.length == 0) {
-                        context.getSource().sendSuccess(() -> Component.literal("You currently don't have any players blocked"),false);
+                    if (blocked.length == 0) {
+                        context.getSource().sendSuccess(() -> Component.literal("You currently don't have any players blocked"), false);
                         return 1;
                     }
-                   context.getSource().sendSuccess(() -> Component.literal("Blocked players are: " + Strings.join(blocked,", ")),false);
+                    context.getSource().sendSuccess(() -> Component.literal("Blocked players are: " + Strings.join(blocked, ", ")), false);
                     return 1;
                 }))
                 .then(Commands.literal("block")
