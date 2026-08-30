@@ -11,7 +11,9 @@ import net.minecraft.server.level.ServerPlayer;
 import net.minecraft.util.CommonColors;
 import org.jetbrains.annotations.Nullable;
 
-import java.util.*;
+import java.util.ArrayList;
+import java.util.List;
+import java.util.Map;
 
 public class NameColor {
 
@@ -34,7 +36,6 @@ public class NameColor {
     );
 
 
-
     private static @Nullable Integer getColor(String input) throws Exception {
         if (input.startsWith("#")) {
             input = input.substring(1);
@@ -45,7 +46,7 @@ public class NameColor {
             }
         }
 
-        if(input.equalsIgnoreCase("clear")) {
+        if (input.equalsIgnoreCase("clear")) {
             return null;
         }
 
@@ -59,7 +60,7 @@ public class NameColor {
     }
 
     private static void updateNameColor(ServerPlayer player) {
-        var packet = new ClientboundPlayerInfoUpdatePacket(ClientboundPlayerInfoUpdatePacket.Action.UPDATE_DISPLAY_NAME,player);
+        var packet = new ClientboundPlayerInfoUpdatePacket(ClientboundPlayerInfoUpdatePacket.Action.UPDATE_DISPLAY_NAME, player);
         TwitchierChat.minecraftServer.getPlayerList().broadcastAll(packet);
     }
 
@@ -70,16 +71,16 @@ public class NameColor {
         dispatcher.register(Commands.literal("color").requires(CommandSourceStack::isPlayer).then(Commands.argument("color", StringArgumentType.greedyString())
                 .suggests((c, p) -> SharedSuggestionProvider.suggest(colors, p)).executes(context -> {
                     ServerPlayer player = context.getSource().getPlayer();
-                    if(player == null) {
+                    if (player == null) {
                         return 0;
                     }
 
                     try {
                         String input = StringArgumentType.getString(context, "color");
                         Integer color = getColor(input);
-                        if(color == null) {
+                        if (color == null) {
                             Config.removeColor(player.getUUID());
-                            context.getSource().sendSuccess(() -> Component.literal("Cleared your name color"),false);
+                            context.getSource().sendSuccess(() -> Component.literal("Cleared your name color"), false);
                             updateNameColor(player);
                             return 1;
                         }

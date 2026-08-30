@@ -1,11 +1,10 @@
 package dev.talkingpanda.twitchierchat;
+
 import java.util.LinkedHashMap;
 import java.util.Map;
 
 
 public class ReplyQueue<V> {
-
-    private long keyCounter = 0;
 
     private final Map<Long, V> map = new LinkedHashMap<>(Config.getMaxHistory(), 0.75f, true) {
 
@@ -14,6 +13,7 @@ public class ReplyQueue<V> {
             return size() > Config.getMaxHistory();
         }
     };
+    private long keyCounter = 0;
 
     public long add(V value) {
         long currentId = keyCounter++;

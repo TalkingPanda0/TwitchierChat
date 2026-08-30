@@ -17,7 +17,7 @@ import java.nio.file.Files;
 public class ResourcePackHandler implements HttpHandler {
 
     @Override
-    public void handleRequest(@NotNull ChannelHandlerContext ctx, @NotNull FullHttpRequest request)  {
+    public void handleRequest(@NotNull ChannelHandlerContext ctx, @NotNull FullHttpRequest request) {
         final File resourcePackFile = new File("./config/twitchierchat/emotes.zip");
         if (!resourcePackFile.exists())
             HttpHandler.sendError(ctx, HttpResponseStatus.NOT_FOUND, "File not found");
@@ -33,7 +33,7 @@ public class ResourcePackHandler implements HttpHandler {
             response.headers().set(HttpHeaderNames.CONTENT_LENGTH, content.readableBytes());
             ctx.writeAndFlush(response).addListener(ChannelFutureListener.CLOSE);
         } catch (IOException e) {
-           HttpHandler.sendError(ctx, HttpResponseStatus.INTERNAL_SERVER_ERROR, "Internal server error");
+            HttpHandler.sendError(ctx, HttpResponseStatus.INTERNAL_SERVER_ERROR, "Internal server error");
         }
     }
 }

@@ -54,7 +54,7 @@ public class Replies {
     private static Component formatReplyText(Component original) {
         MutableComponent result = original.plainCopy();
 
-        for(Component sibling : original.getSiblings()) {
+        for (Component sibling : original.getSiblings()) {
             result.append(sibling.copy().setStyle(Style.EMPTY));
         }
 
@@ -79,7 +79,7 @@ public class Replies {
                             return;
                         }
 
-                        Component replyText = Component.literal("Replying to " + msg.getFirst().getPlainTextName() + ": ").append( formatReplyText(msg.getSecond())  ).withStyle(Style.EMPTY.withShadowColor(CommonColors.BLACK).withColor(ChatFormatting.GRAY));
+                        Component replyText = Component.literal("Replying to " + msg.getFirst().getPlainTextName() + ": ").append(formatReplyText(msg.getSecond())).withStyle(Style.EMPTY.withShadowColor(CommonColors.BLACK).withColor(ChatFormatting.GRAY));
                         playerList.broadcastSystemMessage(replyText, false);
                         playerList.broadcastChatMessage(message, source, ChatType.bind(ChatType.CHAT, source));
 

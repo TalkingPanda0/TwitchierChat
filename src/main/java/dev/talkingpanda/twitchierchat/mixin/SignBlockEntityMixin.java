@@ -14,11 +14,11 @@ public class SignBlockEntityMixin {
     @ModifyVariable(method = "setText", at = @At("HEAD"), argsOnly = true, name = "text")
     private static SignText formatSignText(SignText text) {
         var messages = text.getMessages(false);
-        for (int i=0;i<messages.length;i++){
+        for (int i = 0; i < messages.length; i++) {
             var message = messages[i];
             var formatted = TwitchierChat.formatText(message);
-            if(formatted == null) continue;
-            text = text.setMessage(i,formatted);
+            if (formatted == null) continue;
+            text = text.setMessage(i, formatted);
 
         }
         return text;

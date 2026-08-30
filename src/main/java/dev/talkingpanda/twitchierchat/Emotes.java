@@ -45,17 +45,13 @@ import java.util.zip.ZipOutputStream;
 
 public class Emotes {
     public final static Map<String, ServerPlayer> emotes = new HashMap<>();
-
+    public static final UUID packId = UUID.nameUUIDFromBytes("twitchierchat".getBytes());
     final static String PACK_META = "{ \"pack\": { \"description\": \"Resource pack for chat emotes.\", \"pack_format\": 34, \"min_format\": 34, \"max_format\": 69, \"supported_formats\": {\"min_inclusive\": 34, \"max_inclusive\": 69} } }\n";
     final static String emotesPath = "assets/emotes/textures/gui/sprites/emotes/";
-
     static final Path emotePackPath = Path.of(TwitchierChat.configDir.toString(), "emotes.zip");
     final static File emotePackFile = emotePackPath.toFile();
-
     private static final int TILE_SIZE = 128;
     private static final int FPS = 20;
-
-    public static final UUID packId = UUID.nameUUIDFromBytes("twitchierchat".getBytes());
 
     private static boolean commandRequirement(CommandSourceStack source) {
         if (source.permissions().hasPermission(Permissions.COMMANDS_MODERATOR)) {

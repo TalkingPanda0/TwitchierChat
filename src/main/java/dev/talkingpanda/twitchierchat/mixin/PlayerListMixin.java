@@ -7,9 +7,9 @@ import net.minecraft.network.Connection;
 import net.minecraft.network.chat.ChatType;
 import net.minecraft.network.chat.OutgoingChatMessage;
 import net.minecraft.network.protocol.game.ClientboundPlayerInfoUpdatePacket;
-import net.minecraft.server.players.PlayerList;
-import net.minecraft.server.network.CommonListenerCookie;
 import net.minecraft.server.level.ServerPlayer;
+import net.minecraft.server.network.CommonListenerCookie;
+import net.minecraft.server.players.PlayerList;
 import org.spongepowered.asm.mixin.Mixin;
 import org.spongepowered.asm.mixin.injection.At;
 import org.spongepowered.asm.mixin.injection.Inject;
@@ -22,12 +22,12 @@ import java.util.EnumSet;
 public abstract class PlayerListMixin {
 
     @ModifyVariable(method = "broadcastChatMessage(Lnet/minecraft/network/chat/PlayerChatMessage;Ljava/util/function/Predicate;Lnet/minecraft/server/level/ServerPlayer;Lnet/minecraft/network/chat/ChatType$Bound;)V", at = @At("STORE"), name = "tracked")
-    private static OutgoingChatMessage formatChatMessage(OutgoingChatMessage message, @Local(argsOnly = true, name = "chatType") ChatType.Bound chatType) {
-        return Replies.handleOutgoingMessage(message,chatType);
+    private static OutgoingChatMessage formatChatMessage(OutgoingChatMessage tracked, @Local(argsOnly = true, name = "chatType") ChatType.Bound chatType) {
+        return Replies.handleOutgoingMessage(tracked, chatType);
     }
 
-    @Inject(method = "placeNewPlayer",at = @At("TAIL"))
+    @Inject(method = "placeNewPlayer", at = @At("TAIL"))
     private void sendEmotes(Connection connection, ServerPlayer player, CommonListenerCookie cookie, CallbackInfo ci) {
-        player.connection.send(new ClientboundPlayerInfoUpdatePacket(EnumSet.of( ClientboundPlayerInfoUpdatePacket.Action.ADD_PLAYER),Emotes.emotes.values()));
+        player.connection.send(new ClientboundPlayerInfoUpdatePacket(EnumSet.of(ClientboundPlayerInfoUpdatePacket.Action.ADD_PLAYER), Emotes.emotes.values()));
     }
 }

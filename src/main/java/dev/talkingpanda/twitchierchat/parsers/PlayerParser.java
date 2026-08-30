@@ -8,7 +8,7 @@ import org.jetbrains.annotations.Nullable;
 
 import java.util.regex.Pattern;
 
-public class PlayerParser implements TextParser{
+public class PlayerParser implements TextParser {
 
     private static final Pattern namePattern = Pattern.compile("^\\w{3,16}$");
 
@@ -30,7 +30,7 @@ public class PlayerParser implements TextParser{
 
     @Override
     public @Nullable MutableComponent parse(String input) {
-        String name = input.substring(1,input.length()-1);
+        String name = input.substring(1, input.length() - 1);
         if (!namePattern.matcher(name).matches()) return null;
         return getPlayerHead(name);
     }

@@ -126,7 +126,7 @@ public class Config {
 
     public static void readConfig() {
 
-        if(!configFile.exists()) {
+        if (!configFile.exists()) {
             TwitchierChat.LOGGER.info("Creating default config file");
             writeConfig();
             return;
@@ -257,7 +257,7 @@ public class Config {
     // Very slow
     public static String getNameFromId(UUID id) {
         var profile = TwitchierChat.minecraftServer.services().profileResolver().fetchById(id);
-        if(profile.isPresent()) {
+        if (profile.isPresent()) {
             return profile.get().name();
         } else {
             return id.toString();

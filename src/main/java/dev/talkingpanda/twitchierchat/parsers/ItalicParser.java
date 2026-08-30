@@ -1,15 +1,11 @@
 package dev.talkingpanda.twitchierchat.parsers;
 
-import net.minecraft.ChatFormatting;
-import net.minecraft.network.chat.*;
+import net.minecraft.network.chat.Component;
+import net.minecraft.network.chat.MutableComponent;
 import org.jetbrains.annotations.Nullable;
 
-import java.net.URI;
-
-import static net.minecraft.util.Util.parseAndValidateUntrustedUri;
-
 public class
-ItalicParser implements TextParser{
+ItalicParser implements TextParser {
 
     @Override
     public boolean comboable() {
@@ -28,7 +24,7 @@ ItalicParser implements TextParser{
 
     @Override
     public @Nullable MutableComponent parse(String input) {
-        return parse(Component.literal(input.substring(1, input.length()-1)));
+        return parse(Component.literal(input.substring(1, input.length() - 1)));
     }
 
     public @Nullable MutableComponent parse(MutableComponent input) {

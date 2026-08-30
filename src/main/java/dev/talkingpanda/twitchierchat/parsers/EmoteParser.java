@@ -26,8 +26,8 @@ public class EmoteParser implements TextParser {
 
     @Override
     public @Nullable MutableComponent parse(String input) {
-        if(input.length() <= 2) return null;
-        String emote = input.substring(1,input.length()-1);
+        if (input.length() <= 2) return null;
+        String emote = input.substring(1, input.length() - 1);
         if (!Emotes.emotes.containsKey(emote)) return null;
 
         return getEmote(emote);

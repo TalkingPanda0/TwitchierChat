@@ -19,8 +19,8 @@ public class OutgoingChatMessagePlayerMixin {
     @Final
     private PlayerChatMessage message;
 
-    @Inject(method = "sendToPlayer",at = @At("TAIL"))
+    @Inject(method = "sendToPlayer", at = @At("TAIL"))
     private void inject(ServerPlayer player, boolean filtered, ChatType.Bound chatType, CallbackInfo ci) {
-        Pings.handlePings(this.message,player);
+        Pings.handlePings(this.message, player);
     }
 }

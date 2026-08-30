@@ -8,7 +8,7 @@ import java.net.URI;
 
 import static net.minecraft.util.Util.parseAndValidateUntrustedUri;
 
-public class UrlParser implements TextParser{
+public class UrlParser implements TextParser {
     @Override
     public String getStart() {
         return "http";

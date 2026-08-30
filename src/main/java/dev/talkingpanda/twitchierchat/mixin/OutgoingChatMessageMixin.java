@@ -15,7 +15,7 @@ public interface OutgoingChatMessageMixin {
         if (message.unsignedContent() != null) return message;
 
         var formatted = TwitchierChat.formatString(message.signedContent());
-        if(formatted == null) return message;
+        if (formatted == null) return message;
         return message.withUnsignedContent(formatted);
     }
 }

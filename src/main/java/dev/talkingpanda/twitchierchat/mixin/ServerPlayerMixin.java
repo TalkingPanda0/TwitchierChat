@@ -11,15 +11,14 @@ import org.spongepowered.asm.mixin.injection.Inject;
 import org.spongepowered.asm.mixin.injection.callback.CallbackInfoReturnable;
 
 @Mixin(ServerPlayer.class)
-public abstract  class ServerPlayerMixin extends Player {
+public abstract class ServerPlayerMixin extends Player {
 
     public ServerPlayerMixin(Level level, GameProfile gameProfile) {
         super(level, gameProfile);
     }
 
 
-
-    @Inject(method = "getTabListDisplayName",at = @At("RETURN"),cancellable = true)
+    @Inject(method = "getTabListDisplayName", at = @At("RETURN"), cancellable = true)
     private void colorTabListName(CallbackInfoReturnable<Component> cir) {
         cir.setReturnValue(this.getName());
     }

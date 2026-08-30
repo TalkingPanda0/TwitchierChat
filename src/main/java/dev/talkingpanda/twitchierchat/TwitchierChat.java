@@ -37,7 +37,7 @@ public class TwitchierChat implements DedicatedServerModInitializer {
 
     public final static Logger LOGGER = LoggerFactory.getLogger("twitchierchat");
     // Sorted from biggest start to smallest
-    private static final TextParser[] PARSERS = { new UrlParser(), new ltalicParser(), new BoldParser(), new UnderlineParser(), new EmoteParser(), new PlayerParser(), new ItalicParser(), new StrikethroughParser() };
+    private static final TextParser[] PARSERS = {new UrlParser(), new ltalicParser(), new BoldParser(), new UnderlineParser(), new EmoteParser(), new PlayerParser(), new ItalicParser(), new StrikethroughParser()};
 
     public static DedicatedServer minecraftServer;
 

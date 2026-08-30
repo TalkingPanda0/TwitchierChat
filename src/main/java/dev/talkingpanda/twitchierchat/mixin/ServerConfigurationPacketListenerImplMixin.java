@@ -27,7 +27,7 @@ public class ServerConfigurationPacketListenerImplMixin {
     @Inject(method = "addOptionalTasks", at = @At("TAIL"))
     public void dynamicResourcePack$getResourcePackProperties(CallbackInfo ci) throws Exception {
         var pack = Emotes.getPackProperties();
-        if(pack == null){
+        if (pack == null) {
             return;
         }
         this.configurationTasks.add(new ServerResourcePackConfigurationTask(pack));
@@ -36,7 +36,7 @@ public class ServerConfigurationPacketListenerImplMixin {
     // Suppresses the error when the server has an existing resource pack, there probably is a better way
     @Inject(method = "handleResourcePackResponse", at = @At("HEAD"), cancellable = true)
     private void handleExtraResourcePackResponse(ServerboundResourcePackPacket packet, CallbackInfo ci) {
-        if(this.currentTask != null && !this.currentTask.type().equals(ServerResourcePackConfigurationTask.TYPE) && packet.id().equals(Emotes.packId)) {
+        if (this.currentTask != null && !this.currentTask.type().equals(ServerResourcePackConfigurationTask.TYPE) && packet.id().equals(Emotes.packId)) {
             ci.cancel();
         }
     }

@@ -5,7 +5,7 @@ import net.minecraft.network.chat.MutableComponent;
 import org.jetbrains.annotations.Nullable;
 
 public class
-ltalicParser implements TextParser{
+ltalicParser implements TextParser {
 
     @Override
     public boolean comboable() {
@@ -24,7 +24,7 @@ ltalicParser implements TextParser{
 
     @Override
     public @Nullable MutableComponent parse(String input) {
-        return parse(Component.literal(input.substring(3, input.length()-3)));
+        return parse(Component.literal(input.substring(3, input.length() - 3)));
     }
 
     public @Nullable MutableComponent parse(MutableComponent input) {

@@ -11,11 +11,15 @@ public interface TextParser {
     @Nullable String getEnd();
 
     @Nullable MutableComponent parse(String input);
-    @Nullable default MutableComponent parse(MutableComponent input) {
+
+    @Nullable
+    default MutableComponent parse(MutableComponent input) {
         return input;
     }
 
-    default boolean comboable() { return false; }
+    default boolean comboable() {
+        return false;
+    }
 
     // Reverse the conversion to string done by the client when editing signs
     default String undo(String input) {
